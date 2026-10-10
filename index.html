@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4f5f6">
+<title>circle8 — Keep your parents safe. Even from miles away.</title>
+<meta name="description" content="circle8 is a screen-free safety wristband for aging parents. It detects falls, measures heart rate, and knows their location. Alerts come straight to your phone.">
+<meta property="og:title" content="circle8 — Keep your parents safe. Even from miles away.">
+<meta property="og:description" content="Screen-free safety wristband for aging parents. Fall detection, heart rate, location. First 2,000 signups get an exclusive launch discount.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f4f5f6;
+    --card: #ffffff;
+    --text: #14181a;
+    --text2: #5c6468;
+    --text3: #8b9296;
+    --line: #e4e7e8;
+    --teal: #1c6f66;
+    --teal-dark: #14544d;
+    --teal-soft: #eaf3f1;
+    --red: #c62828;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+    font-size: 16px; line-height: 1.55;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- Header ---------- */
+  header { padding: 18px 0; display: flex; align-items: center; gap: 10px; }
+  .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
+  .header-cta {
+    margin-left: auto; background: var(--teal); color: #fff; text-decoration: none;
+    padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 650;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 36px; align-items: center; padding: 40px 0 30px; }
+  h1 { font-size: 42px; line-height: 1.12; letter-spacing: -1px; font-weight: 750; }
+  .lead { font-size: 18px; color: var(--text2); margin-top: 16px; max-width: 520px; }
+
+  /* Ürün görseli + nabız halkası */
+  .product-vis { position: relative; display: flex; justify-content: center; }
+  .pulse-ring {
+    position: absolute; top: 50%; left: 50%; width: 90px; height: 70px;
+    border: 2px solid var(--teal); border-radius: 50%;
+    transform: translate(-50%, -50%); opacity: 0;
+    animation: pulse 2.4s ease-out infinite;
+  }
+  .pulse-ring.delay { animation-delay: 1.2s; }
+  @keyframes pulse {
+    0%   { transform: translate(-50%, -50%) scale(0.55); opacity: 0.55; }
+    100% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
+  }
+  /* ECG çizgisi */
+  .ecg { margin-top: 18px; width: 100%; height: 44px; }
+  .ecg path {
+    fill: none; stroke: var(--teal); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 420; stroke-dashoffset: 420;
+    animation: draw 3.2s linear infinite;
+  }
+  @keyframes draw {
+    0%   { stroke-dashoffset: 420; }
+    70%  { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -420; }
+  }
+
+  /* ---------- Signup ---------- */
+  .signup { background: var(--card); border-radius: 16px; padding: 24px; margin-top: 22px; }
+  .signup h2 { font-size: 18px; font-weight: 700; }
+  .signup .sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .field { display: flex; gap: 8px; margin-top: 16px; }
+  .field input[type="email"] {
+    flex: 1; padding: 14px 15px; border: 1px solid var(--line); border-radius: 11px;
+    font-size: 15px; background: #fafbfc; color: var(--text); min-width: 0;
+  }
+  .field input[type="email"]:focus { outline: 2px solid var(--teal); border-color: transparent; }
+  .field button {
+    padding: 14px 22px; border: none; border-radius: 11px; background: var(--teal); color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap;
+  }
+  .field button:active { background: var(--teal-dark); }
+  .field button:disabled { background: var(--text3); }
+  .consent { display: flex; gap: 9px; margin-top: 13px; align-items: flex-start; }
+  .consent input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--teal); }
+  .consent label { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .consent a { color: var(--teal); }
+  .counter { font-size: 13px; color: var(--text2); margin-top: 14px; }
+  .counter b { color: var(--text); font-variant-numeric: tabular-nums; }
+  .bar { height: 6px; background: var(--teal-soft); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--teal); border-radius: 3px; width: 0; transition: width 0.8s ease; }
+  .form-msg { margin-top: 12px; font-size: 14px; font-weight: 600; display: none; }
+  .form-msg.ok { color: var(--teal); display: block; }
+  .form-msg.err { color: var(--red); display: block; }
+
+  /* ---------- Bölümler ---------- */
+  section { padding: 44px 0 8px; }
+  h2.sec { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text3); font-weight: 700; }
+  .sec-lead { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-top: 8px; line-height: 1.28; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; }
+  .step { background: var(--card); border-radius: 14px; padding: 20px; }
+  .step .num { font-size: 13px; font-weight: 700; color: var(--teal); font-variant-numeric: tabular-nums; }
+  .step .t { font-size: 16px; font-weight: 700; margin-top: 6px; }
+  .step .d { font-size: 14px; color: var(--text2); margin-top: 5px; }
+
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 22px; }
+  .feat { background: var(--card); border-radius: 14px; padding: 20px; display: flex; gap: 14px; }
+  .feat .ic {
+    width: 40px; height: 40px; border-radius: 10px; background: var(--teal-soft); color: var(--teal);
+    display: flex; align-items: center; justify-content: center; flex: none;
+  }
+  .feat .t { font-size: 15px; font-weight: 700; }
+  .feat .d { font-size: 13.5px; color: var(--text2); margin-top: 3px; }
+
+  .who { background: var(--card); border-radius: 14px; padding: 24px; margin-top: 22px; }
+  .who ul { margin: 14px 0 0 18px; }
+  .who li { font-size: 15px; color: var(--text2); margin-top: 8px; }
+
+  /* ---------- FAQ ---------- */
+  details { background: var(--card); border-radius: 12px; padding: 17px 19px; margin-top: 10px; }
+  summary { cursor: pointer; font-size: 15px; font-weight: 700; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  details p { font-size: 14px; color: var(--text2); margin-top: 10px; }
+
+  footer { padding: 48px 0 50px; color: var(--text3); font-size: 12.5px; }
+  footer .logo { font-size: 16px; color: var(--text); margin-bottom: 10px; }
+  footer a { color: var(--text2); }
+
+  @media (max-width: 760px) {
+    h1 { font-size: 31px; letter-spacing: -0.6px; }
+    .hero { grid-template-columns: 1fr; padding: 26px 0 16px; gap: 26px; }
+    .product-vis { order: -1; }
+    .field { flex-direction: column; }
+    .steps { grid-template-columns: 1fr; }
+    .features { grid-template-columns: 1fr; }
+    .sec-lead { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="logo">
+      <svg width="30" height="20" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
+        <path d="M30 20 C 30 7, 8 7, 8 20 C 8 33, 30 33, 30 20 C 30 7, 52 7, 52 20 C 52 33, 30 33, 30 20 Z"/>
+      </svg>
+      circle8
+    </div>
+    <a class="header-cta" href="#signup">Join the list</a>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>You can't always<br>be there.<br>circle8 can.</h1>
+      <p class="lead">
+        circle8 is a screen-free safety wristband for aging parents. It detects falls,
+        measures heart rate, and knows their location. Alerts come straight to your phone.
+      </p>
+
+      <div class="signup" id="signup">
+        <h2>First 2,000 signups get an exclusive launch discount</h2>
+        <div class="sub">Just leave your email. Your discount code arrives at launch.</div>
+
+        <form id="waitlistForm" novalidate>
+          <div class="field">
+            <input type="email" id="email" placeholder="Your email" required autocomplete="email">
+            <button type="submit" id="submitBtn">Join the list</button>
+          </div>
+          <div class="consent">
+            <input type="checkbox" id="consent" required>
+            <label for="consent">
+              I agree to the <a href="#privacy">Privacy Notice</a> and to receive
+              launch updates and my discount code by email.
+            </label>
+          </div>
+          <input type="text" name="website" id="website" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+          <div class="form-msg" id="formMsg"></div>
+        </form>
+
+        <div class="counter"><b id="joinCount">0</b> people joined · <b>2,000</b> spots</div>
+        <div class="bar"><i id="joinBar"></i></div>
+        <div class="sub" style="margin-top:10px">No spam. One launch email and your code. Unsubscribe anytime.</div>
+      </div>
+    </div>
+
+    <div class="product-vis">
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring delay"></div>
+      <svg width="240" height="260" viewBox="0 0 150 165" fill="none">
+        <path d="M25 22 C 25 8, 125 8, 125 22 L 125 38 C 125 30, 25 30, 25 38 Z" fill="#c8d0d3"/>
+        <path d="M25 108 C 25 122, 125 122, 125 108 L 125 92 C 125 100, 25 100, 25 92 Z" fill="#c8d0d3"/>
+        <rect x="38" y="32" width="74" height="66" rx="18" fill="#1c6f66"/>
+        <rect x="46" y="40" width="58" height="50" rx="13" fill="#14544d"/>
+        <ellipse cx="75" cy="65" rx="13" ry="10" fill="#3f9089"/>
+        <circle cx="75" cy="65" r="4.5" fill="#eaf3f1"/>
+      </svg>
+    </div>
+  </div>
+
+  <svg class="ecg" viewBox="0 0 600 44" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 22 H90 l10 -14 l10 28 l10 -22 l8 8 H300 l10 -14 l10 28 l10 -22 l8 8 H600"/>
+  </svg>
+
+  <section>
+    <h2 class="sec">How it works</h2>
+    <div class="sec-lead">No setup. No screens. Nothing to teach.</div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">01</div>
+        <div class="t">They just wear it</div>
+        <div class="d">No buttons, no menus, no settings. The battery lasts for days.</div>
+      </div>
+      <div class="step">
+        <div class="num">02</div>
+        <div class="t">It watches for the moments that matter</div>
+        <div class="d">A fall or an emergency button press triggers an alert to the family instantly.</div>
+      </div>
+      <div class="step">
+        <div class="num">03</div>
+        <div class="t">You check in from your phone</div>
+        <div class="d">Heart rate, location, and daily activity on one screen. The app warns you when something is off.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Features</h2>
+    <div class="sec-lead">Built for aging parents who don't want another gadget.</div>
+    <div class="features">
+      <div class="feat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4"/><path d="M12 17v.2"/></svg></div>
+        <div><div class="t">Fall detection</div><div class="d">The accelerometer detects falls and notifies you right away.</div></div>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 5.1a5 5 0 0 0-7.1 0L12 6.4l-1.3-1.3a5 5 0 1 0-7.1 7.1L12 20.6l8.4-8.4a5 5 0 0 0 0-7.1z"/></svg></div>
+        <div><div class="t">Heart rate monitoring</div><div class="d">Optical sensor measurements throughout the day.</div></div>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <div><div class="t">Location (GNSS)</div><div class="d">You always know where they are. No phone needed on their side.</div></div>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5.5 5.5 0 0 1 7 0"/><path d="M12 19.5v.2"/><path d="M2 9a15 15 0 0 1 20 0"/></svg></div>
+        <div><div class="t">Cellular built in (LTE-M)</div><div class="d">No Wi-Fi, no phone plan. The band has its own connection.</div></div>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="16" height="9" rx="2"/><path d="M21 11.5v2"/><rect x="5" y="10.5" width="8" height="4" rx="0.8" fill="currentColor" stroke="none"/></svg></div>
+        <div><div class="t">Days of battery</div><div class="d">No daily charging. The app tells you when it's time.</div></div>
+      </div>
+      <div class="feat">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="3"/><path d="M10 6h4"/><path d="M12 18v.2"/></svg></div>
+        <div><div class="t">Emergency button</div><div class="d">One press reaches the family. From there, one tap to call emergency services.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">Who it's for</h2>
+    <div class="who">
+      <div class="sec-lead" style="margin-top:0">If your parent lives alone, circle8 is for you.</div>
+      <ul>
+        <li>Adults with aging parents who live independently</li>
+        <li>Families worried about falls at home</li>
+        <li>Anyone who wants regular heart rate visibility without nagging</li>
+        <li>People who live far away and want a clear answer to "are they okay?"</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">The product</h2>
+    <div class="who">
+      <div class="sec-lead" style="margin-top:0">No screen, because there's nothing to see.</div>
+      <p style="font-size:15px;color:var(--text2);margin-top:10px">
+        circle8 is a light, curved band that sits on the wrist. It has no display,
+        because the person wearing it is never asked to do anything. All the
+        intelligence lives in the app and in the cloud.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec">FAQ</h2>
+    <details>
+      <summary>How does the discount work?</summary>
+      <p>Join the list with your email to claim one of the 2,000 spots. At launch, your personal discount code is sent to your inbox.</p>
+    </details>
+    <details>
+      <summary>When does it ship?</summary>
+      <p>Prototyping is underway. When the launch date is set, the people on the list hear first.</p>
+    </details>
+    <details>
+      <summary>What will it cost?</summary>
+      <p>Pricing is announced at launch. The first 2,000 signups get an additional discount on top of the launch price.</p>
+    </details>
+    <details>
+      <summary>Is health data private?</summary>
+      <p>Data is encrypted from the device to the cloud and is visible only to people you authorize. It is never sold or shared with third parties. See the Privacy Notice below.</p>
+    </details>
+    <details>
+      <summary>Is it hard to set up?</summary>
+      <p>That's the point of circle8: there is nothing to set up for the person wearing it. They put it on, and it works.</p>
+    </details>
+  </section>
+
+  <section id="privacy">
+    <h2 class="sec">Privacy Notice</h2>
+    <div class="who">
+      <p style="font-size:13.5px;color:var(--text2)">
+        The email address you provide is used only for launch updates and delivering your
+        discount code. It is never shared with third parties and never used for advertising.
+        You can request deletion at any time by contacting us. Health data collected by the
+        device is encrypted and accessible only to you and the people you authorize.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="logo">
+      <svg width="24" height="16" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
+        <path d="M30 20 C 30 7, 8 7, 8 20 C 8 33, 30 33, 30 20 C 30 7, 52 7, 52 20 C 52 33, 30 33, 30 20 Z"/>
+      </svg>
+      circle8
+    </div>
+    <div>Safety and health wristband for aging parents.</div>
+    <div style="margin-top:6px">Contact: <a href="mailto:hello@circle8.com">hello@circle8.com</a></div>
+  </footer>
+
+</div>
+
+<script>
+// ================= CONFIG =================
+// Paste your Google Apps Script Web App URL here (see README.md)
+const FORM_ENDPOINT = "PASTE_APPS_SCRIPT_URL_HERE";
+
+const form = document.getElementById("waitlistForm");
+const msg = document.getElementById("formMsg");
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const consent = document.getElementById("consent").checked;
+  const honeypot = document.getElementById("website").value;
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    showMsg("Please enter a valid email address.", "err");
+    return;
+  }
+  if (!consent) {
+    showMsg("Please accept the Privacy Notice to continue.", "err");
+    return;
+  }
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true;
+  btn.textContent = "Joining…";
+
+  try {
+    const res = await fetch(FORM_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ email, consent: true, website: honeypot, source: "twitter" })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      form.style.display = "none";
+      showMsg("You're on the list. Your discount code arrives at launch.", "ok");
+      if (data.count != null) updateCount(data.count, true);
+    } else {
+      showMsg("Something went wrong. Please try again.", "err");
+    }
+  } catch (err) {
+    showMsg("Connection error. Please try again.", "err");
+  }
+  btn.disabled = false;
+  btn.textContent = "Join the list";
+});
+
+function showMsg(text, kind) {
+  msg.textContent = text;
+  msg.className = "form-msg " + kind;
+}
+
+// Sayaç animasyonu
+function animateCount(target) {
+  const el = document.getElementById("joinCount");
+  const start = parseInt(el.textContent.replace(/\D/g, "")) || 0;
+  const t0 = performance.now(), dur = 900;
+  function tick(t) {
+    const p = Math.min(1, (t - t0) / dur);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(start + (target - start) * eased).toLocaleString("en-US");
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function updateCount(n) {
+  animateCount(n);
+  document.getElementById("joinBar").style.width = Math.min(100, (n / 2000) * 100) + "%";
+}
+
+// Sayaç yükleme
+(async () => {
+  try {
+    const res = await fetch(FORM_ENDPOINT + "?count=1");
+    const data = await res.json();
+    if (data.count != null) updateCount(data.count);
+  } catch (_) {}
+})();
+</script>
+</body>
+</html>
