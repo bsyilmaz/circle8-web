@@ -81,12 +81,45 @@
   }
   .note { font-size: 12px; color: var(--text2); line-height: 1.55; }
 
-  /* Nabız kartı */
-  .hr-top { display: flex; align-items: baseline; gap: 8px; }
-  .hr-val { font-size: 52px; font-weight: 700; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; }
-  .hr-unit { font-size: 15px; color: var(--text2); font-weight: 600; }
-  .hr-time { font-size: 12px; color: var(--text3); margin-left: auto; }
-  #sparkline { width: 100%; height: 56px; margin: 10px 0 14px; }
+  /* Nabız hero: halka + ECG */
+  .hr-hero { position: relative; display: flex; justify-content: center; padding: 6px 0 2px; }
+  .hr-hero svg { width: 220px; height: 220px; }
+  .ring-track { fill: none; stroke: #dceae7; stroke-width: 13; }
+  .ring-arc {
+    fill: none; stroke: var(--green); stroke-width: 13; stroke-linecap: round;
+    stroke-dasharray: 534; stroke-dashoffset: 534;
+    transition: stroke-dashoffset 0.9s ease;
+    transform: rotate(-90deg); transform-origin: center;
+  }
+  .ring-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -52%);
+    text-align: center;
+  }
+  .hr-big { font-size: 58px; font-weight: 800; letter-spacing: -2px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hr-unit { font-size: 13px; color: var(--text2); font-weight: 600; margin-top: 4px; }
+  .hr-time { font-size: 11px; color: var(--text3); margin-top: 6px; }
+  #ecgCanvas { width: 100%; height: 64px; margin: 6px 0 4px; }
+  .measuring-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green); margin-right: 5px; vertical-align: 1px;
+  }
+  .measuring .measuring-dot { animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0.25; } }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 0 2px;
+  }
+  .toggle-row .lbl { font-size: 13px; font-weight: 650; }
+  .switch {
+    width: 44px; height: 25px; border-radius: 999px; background: #d4d8da;
+    border: none; cursor: pointer; position: relative; flex: none;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px;
+    border-radius: 50%; background: #fff; transition: left 0.18s ease;
+  }
+  .switch.on { background: var(--green); }
+  .switch.on::after { left: 22px; }
 
   /* Vitals listesi */
   .row {
@@ -232,13 +265,26 @@
   <section class="tabpage active" id="tab-durum">
     <div class="card">
       <h2>Nabız</h2>
-      <div class="hr-top">
-        <div class="hr-val" id="hrVal">--</div>
-        <div class="hr-unit">atım/dk</div>
-        <div class="hr-time" id="hrTime">Ölçüm bekleniyor</div>
+      <div class="hr-hero">
+        <svg viewBox="0 0 200 200">
+          <circle class="ring-track" cx="100" cy="100" r="85"></circle>
+          <circle class="ring-arc" id="ringArc" cx="100" cy="100" r="85"></circle>
+        </svg>
+        <div class="ring-center">
+          <div class="hr-big" id="hrVal">--</div>
+          <div class="hr-unit">atım/dk</div>
+          <div class="hr-time" id="hrTime">Ölçüm bekleniyor</div>
+        </div>
       </div>
-      <canvas id="sparkline"></canvas>
+      <canvas id="ecgCanvas"></canvas>
       <button class="btn primary block" id="btnMeasure">Ölçüm başlat</button>
+      <div class="toggle-row">
+        <div class="lbl"><span class="measuring-dot"></span>Otomatik ölçüm (sürekli takip)</div>
+        <button class="switch" id="btnAuto" aria-label="Otomatik ölçüm"></button>
+      </div>
+      <div class="note" style="margin-top:6px">
+        Açıkken bileklik gün boyu düzenli aralıklarla ölçüm yapar (protokol: 0x19).
+      </div>
     </div>
 
     <div class="card">
@@ -484,45 +530,81 @@ document.querySelectorAll("nav button").forEach((b) => {
   });
 });
 
-/* ---------------- Sparkline ---------------- */
-const spark = $("sparkline");
-function drawSparkline() {
-  const w = (spark.width = spark.clientWidth * devicePixelRatio);
-  const h = (spark.height = 56 * devicePixelRatio);
-  const ctx = spark.getContext("2d");
-  ctx.clearRect(0, 0, w, h);
-  if (hrHistory.length < 2) {
-    ctx.strokeStyle = "#d4d7dc";
-    ctx.lineWidth = 2 * devicePixelRatio;
-    ctx.setLineDash([4 * devicePixelRatio, 5 * devicePixelRatio]);
-    ctx.beginPath();
-    ctx.moveTo(0, h / 2);
-    ctx.lineTo(w, h / 2);
-    ctx.stroke();
+/* ---------------- Nabız halkası + ECG ---------------- */
+const ringArc = $("ringArc");
+const RING_LEN = 2 * Math.PI * 85;
+ringArc.style.strokeDasharray = RING_LEN;
+ringArc.style.strokeDashoffset = RING_LEN;
+
+function setRing(v) {
+  // halka: 40-140 bpm araligini 0-100% olarak gosterir
+  const pct = Math.max(0, Math.min(1, (v - 40) / 100));
+  ringArc.style.strokeDashoffset = RING_LEN * (1 - pct);
+}
+
+const ecg = $("ecgCanvas");
+const ectx = ecg.getContext("2d");
+let ecgPhase = 0, ecgRunning = false, ecgRaf = null;
+
+function ecgY(t) {
+  // stilize PQRST dalgasi
+  const p = t % 1;
+  if (p < 0.10) return 0;
+  if (p < 0.16) return Math.sin((p - 0.10) / 0.06 * Math.PI) * 0.14;
+  if (p < 0.30) return 0;
+  if (p < 0.34) return -(p - 0.30) / 0.04 * 0.18;
+  if (p < 0.38) return -0.18 + (p - 0.34) / 0.04 * 1.05;
+  if (p < 0.42) return 0.87 - (p - 0.38) / 0.04 * 1.15;
+  if (p < 0.46) return -0.28 + (p - 0.42) / 0.04 * 0.28;
+  if (p < 0.62) return 0;
+  if (p < 0.76) return Math.sin((p - 0.62) / 0.14 * Math.PI) * 0.22;
+  return 0;
+}
+
+function drawEcg(step) {
+  const w = (ecg.width = ecg.clientWidth * devicePixelRatio);
+  const h = (ecg.height = 64 * devicePixelRatio);
+  ectx.clearRect(0, 0, w, h);
+  const mid = h * 0.62;
+  if (!ecgRunning && !step) {
+    ectx.strokeStyle = "#d4d8da";
+    ectx.lineWidth = 2 * devicePixelRatio;
+    ectx.beginPath();
+    ectx.moveTo(0, mid);
+    ectx.lineTo(w, mid);
+    ectx.stroke();
     return;
   }
-  const min = Math.min(...hrHistory) - 6;
-  const max = Math.max(...hrHistory) + 6;
-  ctx.strokeStyle = "#c62828";
-  ctx.lineWidth = 2.2 * devicePixelRatio;
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  hrHistory.forEach((v, i) => {
-    const x = (i / (hrHistory.length - 1)) * w;
-    const y = h - ((v - min) / (max - min)) * h;
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.stroke();
+  if (step) ecgPhase += 0.012;
+  ectx.strokeStyle = "#1c6f66";
+  ectx.lineWidth = 2.2 * devicePixelRatio;
+  ectx.lineJoin = "round";
+  ectx.beginPath();
+  for (let x = 0; x <= w; x += 3) {
+    const t = ecgPhase + (x / w) * 2.2;
+    const y = mid - ecgY(t) * h * 0.5;
+    x === 0 ? ectx.moveTo(x, y) : ectx.lineTo(x, y);
+  }
+  ectx.stroke();
 }
-window.addEventListener("resize", drawSparkline);
-drawSparkline();
+
+function ecgLoop() {
+  drawEcg(true);
+  if (ecgRunning) ecgRaf = requestAnimationFrame(ecgLoop);
+}
+
+function setEcg(on) {
+  ecgRunning = on;
+  if (on) ecgLoop();
+  else drawEcg(false);
+}
+window.addEventListener("resize", () => drawEcg(false));
+drawEcg(false);
 
 function pushHr(v) {
   $("hrVal").textContent = v;
-  $("hrTime").textContent = "Son ölçüm " + new Date().toLocaleTimeString("tr-TR");
-  hrHistory.push(v);
-  if (hrHistory.length > 60) hrHistory.shift();
-  drawSparkline();
+  $("hrTime").innerHTML = '<span class="measuring-dot"></span>Son ölçüm ' + new Date().toLocaleTimeString("tr-TR");
+  setRing(v);
 }
 
 /* ---------------- BLE ---------------- */
@@ -667,12 +749,16 @@ const PRESETS = {
   time:    () => buildFrame(0x01, ...le32(Math.floor(Date.now() / 1000) - new Date().getTimezoneOffset() * 60), 3),
   hrstart: () => buildFrame(0x14, 0, 0, 0, 0, 0),
   hrstop:  () => buildFrame(0x15, 0, 0, 0, 0, 0),
+  // setAutoHeartMode (0x19): 08:00-22:00 arasi, 30 dakikada bir olcum
+  automeasure:    () => buildFrame(0x19, 8, 0, 22, 0, 1, 30, 1),
+  automeasureoff: () => buildFrame(0x19, 8, 0, 22, 0, 0, 30, 1),
   steps:   () => buildFrame(0x03),
   bat:     () => buildFrame(0x0B)
 };
 const PRESET_NAMES = {
   find: "Bilekliği bul", time: "Saat ayarı", hrstart: "Nabız ölçümü",
-  hrstop: "Nabız durdurma", steps: "Adım sorgusu", bat: "Pil sorgusu"
+  hrstop: "Nabız durdurma", automeasure: "Otomatik ölçüm aç",
+  automeasureoff: "Otomatik ölçüm kapat", steps: "Adım sorgusu", bat: "Pil sorgusu"
 };
 
 async function sendFrame(key) {
@@ -698,15 +784,43 @@ document.querySelectorAll("[data-cmd]").forEach((b) =>
 
 $("btnMeasure").addEventListener("click", async () => {
   await sendFrame("hrstart");
-  $("hrTime").textContent = "Ölçülüyor";
+  setEcg(true);
+  $("hrTime").innerHTML = '<span class="measuring-dot"></span>Ölçülüyor';
   setStatus("warn", "Nabız ölçülüyor", "Bileklik ölçüm yapıyor, birkaç saniye sürebilir");
   setTimeout(async () => {
     await sendFrame("hrstop");
-    if ($("hrTime").textContent === "Ölçülüyor") {
+    setEcg(false);
+    if ($("hrTime").textContent.includes("Ölçülüyor")) {
       $("hrTime").textContent = "Cevap bekleniyor";
       setStatus("", "Bağlantı kuruldu", "Veriler güncelleniyor");
     }
   }, 15000);
+});
+
+/* Sürekli takip: 0x19 otomatik ölçüm + periyodik komut */
+let autoTimer = null;
+$("btnAuto").addEventListener("click", async () => {
+  const btn = $("btnAuto");
+  const on = !btn.classList.contains("on");
+  btn.classList.toggle("on", on);
+  if (on) {
+    // cihaza "08:00-22:00, 30 dakikada bir" otomatik olcum (protokol 0x19)
+    await sendFrame("automeasure");
+    // emniyet olarak uygulama da periyodik olcum baslatir
+    autoTimer = setInterval(async () => {
+      await sendFrame("hrstart");
+      setEcg(true);
+      setTimeout(async () => { await sendFrame("hrstop"); setEcg(false); }, 12000);
+    }, 120000);
+    addEvent("Sürekli nabız takibi açıldı", "info", "heart");
+    toast("Sürekli takip açık. Bileklik gün boyu düzenli ölçer.");
+  } else {
+    clearInterval(autoTimer);
+    autoTimer = null;
+    await sendFrame("automeasureoff");
+    addEvent("Sürekli nabız takibi kapatıldı", "info", "heart");
+    toast("Sürekli takip kapatıldı.");
+  }
 });
 $("btnFind").addEventListener("click", () => sendFrame("find"));
 $("btnLocate").addEventListener("click", () => {
