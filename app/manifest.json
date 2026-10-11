@@ -1,16 +1,17 @@
 {
-  "name": "circle8 — Bakıcı Uygulaması",
+  "name": "circle8 - Caregiver App",
   "short_name": "circle8",
-  "description": "circle8 sağlık ve güvenlik bilekliği: canlı vitaller, konum, acil durum bildirimi",
-  "start_url": "uygulama.html",
-  "scope": ".",
+  "description": "circle8 health and safety wristband: live vitals, location, emergency alerts",
+  "start_url": "https://bsyilmaz.github.io/circle8-web/app/uygulama.html",
+  "scope": "https://bsyilmaz.github.io/circle8-web/app/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f4f5f7",
-  "theme_color": "#f4f5f7",
+  "background_color": "#f4f5f6",
+  "theme_color": "#1c6f66",
   "lang": "tr",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "https://bsyilmaz.github.io/circle8-web/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "https://bsyilmaz.github.io/circle8-web/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "https://bsyilmaz.github.io/circle8-web/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
