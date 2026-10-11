@@ -630,7 +630,8 @@ $("btnConnect").addEventListener("click", async () => {
   }
   try {
     device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: "M81b" }, { namePrefix: "M81" }, { namePrefix: "Dostum" }],
+      // filtresiz tarama: cihaz isimsiz reklam verirse de listede gorunur
+      acceptAllDevices: true,
       optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
     });
     gattServer = await device.gatt.connect();
@@ -693,7 +694,11 @@ $("btnConnect").addEventListener("click", async () => {
 
     toast("Bağlantı kuruldu: " + name);
   } catch (err) {
-    toast("Bağlantı hatası: " + err.message);
+    if (String(err.message).includes("cancelled")) {
+      toast("Seçim penceresi kapandı. Listeden M81b-105C'yi seçmen gerekiyor.");
+    } else {
+      toast("Bağlantı hatası: " + err.message);
+    }
   }
 });
 
