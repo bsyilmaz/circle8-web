@@ -41,9 +41,19 @@
   header { padding: 22px 0; display: flex; align-items: center; }
   .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
   .header-cta {
-    margin-left: auto; background: var(--ink); color: #fff; text-decoration: none;
+    margin-left: 16px; background: var(--ink); color: #fff; text-decoration: none;
     padding: 11px 20px; border-radius: 10px; font-size: 14px; font-weight: 650;
   }
+  .header-link {
+    margin-left: auto; color: var(--ink2); text-decoration: none;
+    font-size: 14px; font-weight: 650;
+  }
+  .header-link:hover { color: var(--ink); }
+  .hw-link {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 28px;
+    color: var(--teal); text-decoration: none; font-size: 15px; font-weight: 650;
+  }
+  .hw-link:hover { text-decoration: underline; }
 
   /* ---------- Hero ---------- */
   .hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; padding: 56px 0 20px; }
@@ -196,6 +206,7 @@
       </svg>
       circle8
     </div>
+    <a class="header-link" href="donanim/">Hardware</a>
     <a class="header-cta" href="#signup">Join the list</a>
   </header>
 
@@ -211,6 +222,7 @@
         <span><i></i>Cellular built in</span>
         <span><i></i>Fall detection</span>
       </div>
+      <a class="hw-link" href="donanim/">See the hardware in 3D <span aria-hidden="true">→</span></a>
     </div>
 
     <div class="product-panel">

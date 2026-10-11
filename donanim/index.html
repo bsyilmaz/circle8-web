@@ -5,8 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>circle8 — Donanım</title>
 <meta name="description" content="circle8 bileklik donanımı: kaydırmayla dönen 3D model, katman katman açılan görünüm ve iç yerleşim şeması.">
+<link rel="icon" type="image/png" href="../icon-192.png">
+<link rel="apple-touch-icon" href="../app/apple-touch-icon.png">
+<meta name="theme-color" content="#070F0E">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta property="og:title" content="circle8 — Donanım (3D tur)">
+<meta property="og:description" content="Kaydırmayla dönen 3D donanım turu: katman katman açılan görünüm, çipler ve bağlantılar.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="../og.png">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -58,6 +66,7 @@
   #brand{
     position:fixed; top:26px; left:32px; z-index:6; font-size:15px; font-weight:600;
     letter-spacing:.16em; text-transform:lowercase; color:var(--text); opacity:.9;
+    text-decoration:none; display:inline-block;
   }
   #brand .ring{ display:inline-block; width:9px; height:9px; border:1.5px solid var(--mint); border-radius:50%; margin-right:9px; vertical-align:1px; }
 
@@ -152,10 +161,12 @@
 <body>
 
 <div id="glow"></div>
-<canvas id="scene"></canvas>
+<canvas id="scene" aria-hidden="true"></canvas>
 <div id="labels"></div>
 
-<div id="brand"><span class="ring"></span>circle8</div>
+<a id="brand" href="../index.html"><span class="ring"></span>circle8</a>
+<noscript><p style="position:fixed;inset:auto 0 40% 0;text-align:center;color:#9AB0AB;font:14px sans-serif">
+  Bu sayfa 3D donanım turu için JavaScript kullanır. Lütfen JavaScript'i etkinleştirin.</p></noscript>
 
 <div id="ui">
   <!-- Bölüm 0: hero -->
@@ -288,10 +299,13 @@ const M = {
   ust: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.05, clearcoat: 0.25, clearcoatRoughness: 0.45 }),
   alt: new THREE.MeshPhysicalMaterial({ color: 0x2B3B39, roughness: 0.55, metalness: 0.1 }),
   buton: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.08, clearcoat: 0.25 }),
-  cam: new THREE.MeshPhysicalMaterial({
-    color: 0x0B1614, roughness: 0.1, metalness: 0, transmission: 0.55, thickness: 1.4,
-    ior: 1.5, transparent: true, opacity: 1
-  }),
+  // Mobilde transmission pahalı bir render geçişi; aynı görünüm yarı saydamlıkla da olur
+  cam: isMobile
+    ? new THREE.MeshPhysicalMaterial({ color: 0x0B1614, roughness: 0.12, metalness: 0, transparent: true, opacity: 0.62 })
+    : new THREE.MeshPhysicalMaterial({
+        color: 0x0B1614, roughness: 0.1, metalness: 0, transmission: 0.55, thickness: 1.4,
+        ior: 1.5, transparent: true, opacity: 1
+      }),
   membran: new THREE.MeshPhysicalMaterial({ color: 0xE9EEEB, roughness: 0.85, transparent: true, opacity: 0.8, side: THREE.DoubleSide }),
   strap: new THREE.MeshPhysicalMaterial({
     color: 0x1D5C53, roughness: 0.6, metalness: 0.02, sheen: 0.5, sheenRoughness: 0.65,
@@ -608,8 +622,8 @@ function addConnection(points) {
   const line = new THREE.Line(geo, mat);
   line.computeLineDistances();
   connGroup.add(line);
-  // akan ışık noktaları
-  for (let i = 0; i < 2; i++) {
+  // akan ışık noktaları (mobilde tek)
+  for (let i = 0; i < (isMobile ? 1 : 2); i++) {
     const spr = new THREE.Sprite(new THREE.SpriteMaterial({
       map: GLOW_TEX, blending: THREE.AdditiveBlending, depthWrite: false,
       transparent: true, opacity: 0, color: 0xBFE5D9
@@ -811,12 +825,21 @@ function frame() {
 }
 renderer.setAnimationLoop(frame);
 
-/* ---------------- yeniden boyutlandırma ---------------- */
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
+/* ---------------- yeniden boyutlandırma (debounce) ---------------- */
+function fitCamera() {
+  const aspect = innerWidth / innerHeight;
+  camera.aspect = aspect;
+  // dikey ekranda daha geniş açı: ürün kadrajdan taşmasın
+  camera.fov = aspect < 0.8 ? 48 : (aspect < 1.2 ? 38 : 32);
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.25 : 1.5));
+}
+fitCamera();
+let resizeTimer = null;
+addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(fitCamera, 120);
 });
 
 /* ---------------- ipucu ---------------- */
