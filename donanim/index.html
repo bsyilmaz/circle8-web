@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>circle8 — Donanım</title>
 <meta name="description" content="circle8 bileklik donanımı: kaydırmayla dönen 3D model, katman katman açılan görünüm ve iç yerleşim şeması.">
-<link rel="icon" type="image/png" href="../icon-192.png">
-<link rel="apple-touch-icon" href="../app/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="theme-color" content="#070F0E">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,7 @@
 <meta property="og:title" content="circle8 — Donanım (3D tur)">
 <meta property="og:description" content="Kaydırmayla dönen 3D donanım turu: katman katman açılan görünüm, çipler ve bağlantılar.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="../og.png">
+<meta property="og:image" content="https://bsyilmaz.github.io/dostum-bileklik-prototip-1/website/og.png">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -295,6 +295,17 @@ fill.position.set(-30, -50, 40);
 scene.add(fill);
 
 /* ---------------- malzemeler ---------------- */
+// silikon doku katmanları (renk varyasyonu, pürüzlülük, mikro kabartı)
+const TEX_COL = noiseTexture(256, 244, 18, true);
+TEX_COL.colorSpace = THREE.SRGBColorSpace;
+const TEX_ROUGH = noiseTexture(256, 150, 110, true);
+const TEX_BUMP = noiseTexture(256, 150, 215, true);
+const SILICON = {
+  map: TEX_COL, roughnessMap: TEX_ROUGH, bumpMap: TEX_BUMP, bumpScale: 0.35,
+  metalness: 0.02, sheen: 0.6, sheenRoughness: 0.5, sheenColor: new THREE.Color(0x2E9483),
+  clearcoat: 0.12, clearcoatRoughness: 0.5, side: THREE.DoubleSide
+};
+
 const M = {
   ust: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.05, clearcoat: 0.25, clearcoatRoughness: 0.45 }),
   alt: new THREE.MeshPhysicalMaterial({ color: 0x2B3B39, roughness: 0.55, metalness: 0.1 }),
@@ -307,10 +318,8 @@ const M = {
         ior: 1.5, transparent: true, opacity: 1
       }),
   membran: new THREE.MeshPhysicalMaterial({ color: 0xE9EEEB, roughness: 0.85, transparent: true, opacity: 0.8, side: THREE.DoubleSide }),
-  strap: new THREE.MeshPhysicalMaterial({
-    color: 0x1D5C53, roughness: 0.6, metalness: 0.02, sheen: 0.5, sheenRoughness: 0.65,
-    sheenColor: new THREE.Color(0x2E9483), side: THREE.DoubleSide
-  }),
+  strap: new THREE.MeshPhysicalMaterial({ color: 0x1D5C53, roughness: 0.62, ...SILICON }),
+  keeper: new THREE.MeshPhysicalMaterial({ color: 0x16483E, roughness: 0.7, ...SILICON }),
   pcbSensor: new THREE.MeshStandardMaterial({ color: 0x14624A, roughness: 0.55, metalness: 0.12 }),
   pcbMain: new THREE.MeshStandardMaterial({ color: 0x11463A, roughness: 0.55, metalness: 0.12 }),
   chip: new THREE.MeshStandardMaterial({ color: 0x14181C, roughness: 0.42, metalness: 0.22 }),
@@ -354,7 +363,7 @@ function cyl(rt, rb, h, x, y, z, mat, seg = 24) {
   return m;
 }
 
-// Dikdörtgen kesitli süpürme (kayış ve FPC için)
+// Dikdörtgen kesitli süpürme (FPC için)
 function sweepRect(path, width, thick) {
   const n = path.length, pos = [], idx = [];
   const W2 = width / 2, T2 = thick / 2;
@@ -384,6 +393,72 @@ function sweepRect(path, width, thick) {
   g.setIndex(idx);
   g.computeVertexNormals();
   return g;
+}
+
+// Yuvarlatılmış (süperelips) kesitli süpürme: segment başına genişlik/kalınlık değişebilir.
+// Gerçek silikon bant görünümü için kesit köşeleri yuvarlak, UV'li (doku için).
+function sweepProfile(path, profile, roundness = 4.2, seg = 22, uRepeat = 9) {
+  const n = path.length, pos = [], idx = [], uvs = [];
+  const zAxis = new THREE.Vector3(0, 0, 1);
+  for (let i = 0; i < n; i++) {
+    const p = path[i];
+    const prev = path[(i - 1 + n) % n], next = path[(i + 1) % n];
+    const tan = next.clone().sub(prev).normalize();
+    const nrm = new THREE.Vector3(-tan.y, tan.x, 0).normalize();
+    const { w, h } = profile(i / n);
+    for (let j = 0; j < seg; j++) {
+      const a = (j / seg) * Math.PI * 2;
+      const c = Math.cos(a), s = Math.sin(a), e = 2 / roundness;
+      const cz = Math.sign(c) * Math.pow(Math.abs(c), e);
+      const cy = Math.sign(s) * Math.pow(Math.abs(s), e);
+      const v = p.clone()
+        .addScaledVector(nrm, cy * h / 2)
+        .addScaledVector(zAxis, cz * w / 2);
+      pos.push(v.x, v.y, v.z);
+      uvs.push((i / n) * uRepeat, j / seg);
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < seg; j++) {
+      const a = i * seg + j, a2 = i * seg + (j + 1) % seg;
+      const b = ((i + 1) % n) * seg + j, b2 = ((i + 1) % n) * seg + (j + 1) % seg;
+      idx.push(a, b, b2, a, b2, a2);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+// Prosedürel silikon doku: ince gürültü (renk/roughness/bump için)
+function noiseTexture(size, mean, spread, blob) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(size, size);
+  for (let i = 0; i < size * size; i++) {
+    const v = mean + (Math.random() - 0.5) * spread;
+    img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = v;
+    img.data[i * 4 + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  if (blob) {
+    ctx.globalAlpha = 0.14;
+    for (let i = 0; i < size; i++) {
+      const x = Math.random() * size, y = Math.random() * size, r = 2 + Math.random() * size / 16;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, i % 2 ? '#fff' : '#000');
+      g.addColorStop(1, 'rgba(128,128,128,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    ctx.globalAlpha = 1;
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
 }
 
 function glowTexture() {
@@ -496,19 +571,42 @@ function buildInternals() {
   return { gButon, gMem, gAlt, gUst };
 }
 
-/* ---------------- kayış (prosedürel, kaba STL kullanılmıyor) ---------------- */
+/* ---------------- kayış (prosedürel gerçek silikon bant) ---------------- */
 function buildStrap() {
   const path = [];
-  const a = 28, b = 24.5, cy = -25.6, N = 128;
+  const a = 28, b = 24.5, cy = -25.6, N = 176;
+  // pod'un gerçek alt yüzü (R=42 kavisi, CAD'deki z_b) — bant buna yapışsın
+  const zb = (x) => -42 + Math.sqrt(Math.max(42 * 42 - x * x, 0));
   for (let i = 0; i < N; i++) {
     const t = (i / N) * Math.PI * 2;
-    path.push(new THREE.Vector3(a * Math.sin(t), cy + b * Math.cos(t), 0));
+    const x = a * Math.sin(t);
+    const yEll = cy + b * Math.cos(t);        // bileği saran elips yayı
+    const yTop = zb(x) - 1.35;                // pod'un altına oturan uç
+    const u = Math.abs(((t + Math.PI) % (Math.PI * 2)) - Math.PI);   // 0 = pod altı, π = bilek dibi
+    const w = Math.min(1, Math.max(0, (u - 0.3) / 0.85));
+    const s = w * w * (3 - 2 * w);            // yumuşak geçiş
+    path.push(new THREE.Vector3(x, yEll * s + yTop * (1 - s), 0));
   }
-  const mesh = new THREE.Mesh(sweepRect(path, 22, 2.8), M.strap);
+  // kesit: pod'a bitişik yerde geniş, bileğin altında hafif daralır
+  const prof = (u) => {
+    const k = (1 - Math.cos(u * Math.PI * 2)) / 2;      // 0 = tepe (pod altı), 1 = dip
+    return { w: 22 - 3.4 * k, h: 2.9 - 0.55 * k };
+  };
+  const mesh = new THREE.Mesh(sweepProfile(path, prof, 4.2, 22, 9), M.strap);
   mesh.castShadow = true; mesh.receiveShadow = true;
   const g = part('strap', 0);
   g.add(mesh);
   parts.strap.mesh = mesh;
+
+  // toka/keeper: bileğin altında bandı tutan küçük kılıf
+  const seg = [];
+  for (let i = Math.floor(N * 0.475); i < Math.floor(N * 0.525); i++) seg.push(path[i]);
+  const keeper = new THREE.Mesh(
+    sweepProfile(seg, () => ({ w: 20.4, h: 4.6 }), 4.2, 22, 2),
+    M.keeper
+  );
+  keeper.castShadow = true; keeper.receiveShadow = true;
+  g.add(keeper);
   return g;
 }
 
@@ -688,6 +786,8 @@ function applyFrame() {
   // kayış görünürlüğü
   M.strap.opacity = view.strap;
   M.strap.transparent = view.strap < 0.999;
+  M.keeper.opacity = view.strap;
+  M.keeper.transparent = view.strap < 0.999;
   parts.strap.group.visible = view.strap > 0.02;
 
   // üst LED + parlama
