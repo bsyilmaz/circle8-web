@@ -230,6 +230,34 @@
     font-family: ui-monospace, Consolas, monospace; font-size: 12px;
   }
 
+  /* Rapor + grafik + widget */
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+  .report-grid .rv { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .report-grid .rl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 2px; }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 84px; margin-top: 8px; }
+  .bars .bwrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
+  .bars .b { width: 100%; max-width: 26px; background: var(--green); border-radius: 5px; min-height: 3px; opacity: 0.85; }
+  .bars .b.empty { background: var(--line); }
+  .bars .bd { font-size: 10px; color: var(--text3); }
+  .med-row, .care-row {
+    display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line);
+  }
+  .med-row:last-child, .care-row:last-child { border-bottom: none; }
+  .med-row .lbl, .care-row .lbl { font-size: 14px; font-weight: 600; }
+  .med-row .meta, .care-row .meta { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
+  .med-row .time { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+  .widget {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 16px 18px; box-shadow: 0 3px 10px rgba(16, 20, 22, 0.06);
+  }
+  .widget .w-top { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--text2); }
+  .widget .w-main { font-size: 18px; font-weight: 750; margin-top: 8px; }
+  .widget .w-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .demo-tag {
+    display: inline-block; font-size: 10px; font-weight: 700; color: var(--amber);
+    border: 1px solid var(--amber); border-radius: 5px; padding: 0 5px; margin-left: 6px; vertical-align: 2px;
+  }
+
   /* Alarm */
   #alarm {
     position: fixed; inset: 0; background: var(--red); color: #fff;
@@ -331,6 +359,17 @@
     </div>
 
     <div class="card">
+      <h2>Takip</h2>
+      <div class="lbl" style="font-size:13px;font-weight:650">Nabız · son 24 saat</div>
+      <canvas id="hrChart" style="width:100%;height:70px;margin:8px 0 16px"></canvas>
+      <div class="lbl" style="font-size:13px;font-weight:650">Adım · bu hafta</div>
+      <div class="bars" id="weekBars"></div>
+      <div class="note" id="chartNote" style="margin-top:10px">
+        Grafikler cihazdan gelen verilerle dolar. Henüz veri yoksa boş görünür.
+      </div>
+    </div>
+
+    <div class="card">
       <h2>Konum</h2>
       <div class="addr" id="addrMini">Konum bekleniyor</div>
       <div class="geo-nums" id="geoMini">--</div>
@@ -393,6 +432,61 @@
     <div class="card">
       <h2>Olay Geçmişi</h2>
       <div id="eventList"><div class="empty">Kayıt yok. Düşme, yardım çağrıları ve bağlantı değişimleri burada listelenir.</div></div>
+    </div>
+  </section>
+
+  <!-- ============ RAPOR ============ -->
+  <section class="tabpage" id="tab-rapor">
+    <div class="card">
+      <h2>Babam'ın Haftası</h2>
+      <div class="report-grid">
+        <div><div class="rv" id="repHr">--</div><div class="rl">Ort. nabız</div></div>
+        <div><div class="rv" id="repSteps">--</div><div class="rl">Toplam adım</div></div>
+        <div><div class="rv" id="repSleep">--</div><div class="rl">Ort. uyku</div></div>
+        <div><div class="rv" id="repEvents">--</div><div class="rl">Olay</div></div>
+      </div>
+      <div class="note" id="repNote" style="margin-top:12px">
+        Bu hafta için veri toplanıyor. Rapor her pazar güncellenir.
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="btnShare">Raporu paylaş</button>
+        <button class="btn" id="btnDemo">Sahne demosu</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>İlaç Hatırlatma</h2>
+      <div id="medList"></div>
+      <button class="btn" id="btnAddMed" style="margin-top:10px">Hatırlatma ekle</button>
+      <div class="note" style="margin-top:8px">
+        Hatırlatmalar bilekliğe iletilir; zamanı geldiğinde bileklik titreşimle uyarır.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Bakıcı Ekibi</h2>
+      <div id="careList"></div>
+      <button class="btn" id="btnAddCare" style="margin-top:10px">Aileye ekle</button>
+      <div class="note" style="margin-top:8px">
+        Eklenen kişiler olay bildirimlerini alır ve raporu görebilir.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Telefon Widget'ı</h2>
+      <div class="widget">
+        <div class="w-top">
+          <svg width="22" height="15" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
+            <path d="M30 20 C 30 7, 8 7, 8 20 C 8 33, 30 33, 30 20 C 30 7, 52 7, 52 20 C 52 33, 30 33, 30 20 Z"/>
+          </svg>
+          circle8
+        </div>
+        <div class="w-main"><b id="widgetName">Babam</b> · <span id="widgetStatus">İyi</span></div>
+        <div class="w-sub">Nabız <span id="widgetHr">--</span> · Son olay: <span id="widgetEvent">yok</span></div>
+      </div>
+      <div class="note" style="margin-top:8px">
+        Ana ekran widget'ı: bakıcı uygulamayı açmadan durumu görür (Prototip 1 özelliği).
+      </div>
     </div>
   </section>
 
@@ -462,6 +556,7 @@
   <button class="active" data-tab="durum"><span class="ic" data-ic="home"></span>Durum</button>
   <button data-tab="konum"><span class="ic" data-ic="pin"></span>Konum</button>
   <button data-tab="olaylar"><span class="ic" data-ic="bell"></span>Olaylar</button>
+  <button data-tab="rapor"><span class="ic" data-ic="activity"></span>Rapor</button>
   <button data-tab="cihaz"><span class="ic" data-ic="watch"></span>Cihaz</button>
 </nav>
 
@@ -1042,6 +1137,200 @@ if (savedName) {
   $("patientName").textContent = savedName;
   $("avatar").textContent = savedName[0].toUpperCase();
 }
+
+/* ---------------- Grafikler ---------------- */
+const hrSeries = [];        // son 24 saat (doluysa cizilir)
+const weekSteps = [0, 0, 0, 0, 0, 0, 0];
+const DAYS_TR = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"];
+
+function drawHrChart() {
+  const c = $("hrChart");
+  const w = (c.width = c.clientWidth * devicePixelRatio);
+  const h = (c.height = 70 * devicePixelRatio);
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, w, h);
+  if (hrSeries.length < 2) {
+    ctx.strokeStyle = "#d4d8da";
+    ctx.lineWidth = 2 * devicePixelRatio;
+    ctx.setLineDash([4 * devicePixelRatio, 5 * devicePixelRatio]);
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    ctx.lineTo(w, h / 2);
+    ctx.stroke();
+    return;
+  }
+  const min = Math.min(...hrSeries) - 5, max = Math.max(...hrSeries) + 5;
+  ctx.strokeStyle = "#1c6f66";
+  ctx.lineWidth = 2.2 * devicePixelRatio;
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  hrSeries.forEach((v, i) => {
+    const x = (i / (hrSeries.length - 1)) * w;
+    const y = h - ((v - min) / (max - min)) * h;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+}
+
+function drawWeekBars() {
+  const el = $("weekBars");
+  el.innerHTML = "";
+  const max = Math.max(...weekSteps, 1);
+  weekSteps.forEach((v, i) => {
+    const wrap = document.createElement("div");
+    wrap.className = "bwrap";
+    const b = document.createElement("div");
+    b.className = "b" + (v ? "" : " empty");
+    b.style.height = v ? Math.max(8, (v / max) * 100) + "%" : "6%";
+    const d = document.createElement("div");
+    d.className = "bd";
+    d.textContent = DAYS_TR[i];
+    wrap.append(b, d);
+    el.appendChild(wrap);
+  });
+}
+window.addEventListener("resize", drawHrChart);
+drawHrChart();
+drawWeekBars();
+
+function setWeekData(arr, label) {
+  arr.forEach((v, i) => (weekSteps[i] = v));
+  drawWeekBars();
+  if (label) $("chartNote").innerHTML = label;
+}
+
+/* ---------------- Haftalık rapor ---------------- */
+function setReport(hr, steps, sleep, events, note) {
+  $("repHr").textContent = hr;
+  $("repSteps").textContent = steps;
+  $("repSleep").textContent = sleep;
+  $("repEvents").textContent = events;
+  if (note) $("repNote").innerHTML = note;
+}
+
+$("btnShare").addEventListener("click", async () => {
+  const text =
+    "circle8 haftalık rapor — " + $("patientName").textContent.trim() + "\n" +
+    "Ort. nabız: " + $("repHr").textContent + "\n" +
+    "Toplam adım: " + $("repSteps").textContent + "\n" +
+    "Ort. uyku: " + $("repSleep").textContent + "\n" +
+    "Olay: " + $("repEvents").textContent;
+  if (navigator.share) {
+    try { await navigator.share({ title: "circle8 haftalık rapor", text }); return; } catch (_) {}
+  }
+  window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+});
+
+/* ---------------- İlaç hatırlatma ---------------- */
+let meds = JSON.parse(localStorage.getItem("circle8_meds") || "null") || [
+  { name: "Tansiyon ilacı", dose: "1 tablet", time: "09:00", on: true },
+  { name: "D vitamini", dose: "1 damla", time: "21:00", on: true }
+];
+function renderMeds() {
+  const el = $("medList");
+  el.innerHTML = "";
+  meds.forEach((m, i) => {
+    const row = document.createElement("div");
+    row.className = "med-row";
+    row.innerHTML =
+      `<div class="ic" data-ic="info"></div><div><div class="lbl">${m.name}</div>` +
+      `<div class="meta">${m.dose}${m.on ? "" : " · kapalı"}</div></div><div class="time">${m.time}</div>`;
+    row.addEventListener("click", () => {
+      meds[i].on = !meds[i].on;
+      localStorage.setItem("circle8_meds", JSON.stringify(meds));
+      renderMeds();
+    });
+    el.appendChild(row);
+  });
+  paintIcons();
+}
+$("btnAddMed").addEventListener("click", () => {
+  const name = prompt("İlaç adı:");
+  if (!name) return;
+  const time = prompt("Saat (ör. 09:00):", "09:00") || "09:00";
+  meds.push({ name: name.trim(), dose: "1 doz", time: time.trim(), on: true });
+  localStorage.setItem("circle8_meds", JSON.stringify(meds));
+  renderMeds();
+  addEvent("İlaç hatırlatma eklendi: " + name.trim(), "info", "info");
+});
+renderMeds();
+
+/* ---------------- Bakıcı ekibi ---------------- */
+let cares = JSON.parse(localStorage.getItem("circle8_cares") || "null") || [
+  { name: "Ayşe (kızı)", phone: "+905000000000" },
+  { name: "Dr. Mehmet", phone: "+905000000001" }
+];
+function renderCares() {
+  const el = $("careList");
+  el.innerHTML = "";
+  cares.forEach((c) => {
+    const row = document.createElement("div");
+    row.className = "care-row";
+    row.innerHTML =
+      `<div class="ic" data-ic="phone"></div><div><div class="lbl">${c.name}</div>` +
+      `<div class="meta">Olay bildirimi alır</div></div>`;
+    const a = document.createElement("a");
+    a.className = "btn";
+    a.href = "tel:" + c.phone;
+    a.style.cssText = "margin-left:auto;padding:9px 14px;text-decoration:none";
+    a.textContent = "Ara";
+    row.appendChild(a);
+    el.appendChild(row);
+  });
+  paintIcons();
+}
+$("btnAddCare").addEventListener("click", () => {
+  const name = prompt("Kişi adı:");
+  if (!name) return;
+  const phone = prompt("Telefon (0 ile):", "05") || "05";
+  cares.push({ name: name.trim(), phone: phone.trim() });
+  localStorage.setItem("circle8_cares", JSON.stringify(cares));
+  renderCares();
+  addEvent("Bakıcı ekibi güncellendi: " + name.trim(), "info", "phone");
+});
+renderCares();
+
+/* ---------------- Widget güncelleme ---------------- */
+function updateWidget(hr, status, lastEvent) {
+  if (hr != null) $("widgetHr").textContent = hr;
+  if (status) $("widgetStatus").textContent = status;
+  if (lastEvent) $("widgetEvent").textContent = lastEvent;
+}
+
+/* ---------------- Rehberli sahne demosu ---------------- */
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let demoMode = false;
+
+$("btnDemo").addEventListener("click", async () => {
+  demoMode = true;
+  toast("Demo başladı: 1/3 Nabız ölçümü");
+  document.querySelector('[data-tab="durum"]').click();
+  setEcg(true);
+  for (let i = 0; i < 8; i++) {
+    pushHr(72 + Math.round(Math.random() * 8 - 3));
+    await sleep(600);
+  }
+  setEcg(false);
+  hrSeries.push(...[70, 72, 74, 71, 73, 76, 72, 70, 71, 74]);
+  drawHrChart();
+  setWeekData([4200, 5100, 3800, 6200, 5400, 2900, 4600],
+    'Grafikler <span class="demo-tag">demo</span> verisiyle dolu (sahne sunumu için)');
+  updateWidget(null, "İyi", "yok");
+  toast("2/3 Olay: düşme senaryosu");
+  await sleep(1000);
+  triggerAlarm("Düşme algılandı", "demo (senaryo)");
+});
+
+// alarm kapatilinca demo 3. adima gecsin
+$("btnAlarmOff").addEventListener("click", () => {
+  if (!demoMode) return;
+  demoMode = false;
+  document.querySelector('[data-tab="rapor"]').click();
+  setReport("72 bpm", "32.200", "6,8 sa", "1",
+    'Haftalık özet <span class="demo-tag">demo</span> verisiyle hazırlandı.');
+  updateWidget(72, "İyi", "düşme (çözüldü)");
+  toast("3/3 Haftalık rapor hazır. Paylaş düğmesiyle WhatsApp'tan gönderilebilir.");
+});
 
 /* ---------------- PWA ---------------- */
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
