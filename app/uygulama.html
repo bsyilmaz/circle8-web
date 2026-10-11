@@ -768,11 +768,7 @@ async function connectFlow(all) {
     } : {
       // dar liste: bileklik adaylari (isimden veya bilinen servislerden taninir)
       filters: [
-        { namePrefix: "M81b" },
-        { namePrefix: "M81" },
-        { namePrefix: "Dostum" },
-        { services: [0x1812] },
-        { services: [0xFEF5] }
+        { namePrefix: "M81b" }
       ],
       optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
     });
