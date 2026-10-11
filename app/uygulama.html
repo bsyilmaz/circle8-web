@@ -387,7 +387,12 @@
       </div>
       <div class="btn-row">
         <button class="btn primary" id="btnConnect">Bağlan</button>
+        <button class="btn" id="btnConnectAll">Tümünü göster</button>
         <button class="btn" id="btnDisconnect">Bağlantıyı kes</button>
+      </div>
+      <div class="note" style="margin-top:8px">
+        "Bağlan" yalnızca bileklik adaylarını listeler. "Tümünü göster" sorun giderme
+        içindir, liste kalabalık olur.
       </div>
     </div>
 
@@ -623,15 +628,24 @@ function toHex(dv) {
   return b.join(" ");
 }
 
-$("btnConnect").addEventListener("click", async () => {
+async function connectFlow(all) {
   if (!("bluetooth" in navigator)) {
     toast("Bu tarayıcı Bluetooth bağlantısını desteklemiyor. Android Chrome kullanın.");
     return;
   }
   try {
-    device = await navigator.bluetooth.requestDevice({
-      // filtresiz tarama: cihaz isimsiz reklam verirse de listede gorunur
+    device = await navigator.bluetooth.requestDevice(all ? {
       acceptAllDevices: true,
+      optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
+    } : {
+      // dar liste: bileklik adaylari (isimden veya bilinen servislerden taninir)
+      filters: [
+        { namePrefix: "M81b" },
+        { namePrefix: "M81" },
+        { namePrefix: "Dostum" },
+        { services: [0x1812] },
+        { services: [0xFEF5] }
+      ],
       optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
     });
     gattServer = await device.gatt.connect();
@@ -700,7 +714,10 @@ $("btnConnect").addEventListener("click", async () => {
       toast("Bağlantı hatası: " + err.message);
     }
   }
-});
+}
+
+$("btnConnect").addEventListener("click", () => connectFlow(false));
+$("btnConnectAll").addEventListener("click", () => connectFlow(true));
 
 $("btnDisconnect").addEventListener("click", () => {
   if (device && device.gatt.connected) device.gatt.disconnect();
