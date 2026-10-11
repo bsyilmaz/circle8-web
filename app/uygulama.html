@@ -155,7 +155,9 @@
     padding: 12px 16px; border-radius: 11px; border: none;
     font-size: 14px; font-weight: 650; cursor: pointer;
     background: #eceef1; color: var(--text);
+    transition: transform 0.08s ease;
   }
+  .btn:active { transform: scale(0.97); }
   .btn.primary { background: var(--blue); color: #fff; }
   .btn.block { width: 100%; padding: 15px; font-size: 15px; }
   .btn.danger { background: var(--red); color: #fff; }
@@ -196,7 +198,11 @@
   nav button.active { color: var(--text); }
 
   .tabpage { display: none; }
-  .tabpage.active { display: block; }
+  .tabpage.active { display: block; animation: tabin 0.18s ease; }
+  @keyframes tabin {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: none; }
+  }
 
   /* Geliştirici */
   details.tech {
@@ -337,6 +343,24 @@
     <div style="padding: 4px var(--pad) 0">
       <button class="btn danger block" id="btnSos">Acil yardım iste</button>
       <div class="note" style="margin-top:8px">Düğme, acil durum bildirimini tetikler ve kayda geçer.</div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Acil Kişiler</h2>
+      <div class="row">
+        <div class="ic" data-ic="phone"></div>
+        <div><div class="lbl">Ayşe (kızı)</div><div class="meta">Birincil kişi</div></div>
+        <a class="btn" href="tel:+905000000000" style="margin-left:auto;padding:9px 14px;text-decoration:none">Ara</a>
+      </div>
+      <div class="row">
+        <div class="ic" data-ic="phone"></div>
+        <div><div class="lbl">Dr. Mehmet</div><div class="meta">Aile hekimi</div></div>
+        <a class="btn" href="tel:+905000000001" style="margin-left:auto;padding:9px 14px;text-decoration:none">Ara</a>
+      </div>
+      <div class="note" style="margin-top:8px">
+        Acil durumda bu kişiler sırayla aranır. Numaralar gerçek kullanımda
+        uygulama ayarlarından düzenlenir.
+      </div>
     </div>
   </section>
 
@@ -633,6 +657,10 @@ async function connectFlow(all) {
     toast("Bu tarayıcı Bluetooth bağlantısını desteklemiyor. Android Chrome kullanın.");
     return;
   }
+  // alarm bildirimleri icin izin (bir kez sorulur)
+  if ("Notification" in window && Notification.permission === "default") {
+    try { await Notification.requestPermission(); } catch (_) {}
+  }
   try {
     device = await navigator.bluetooth.requestDevice(all ? {
       acceptAllDevices: true,
@@ -921,6 +949,26 @@ function triggerAlarm(title, source) {
   $("alarm").classList.add("show");
   addEvent(title + " (" + source + ")", "alarm", "alert");
   setStatus("danger", "Acil durum", title + ", müdahale gerekiyor");
+
+  // telefon titresin (destekleyen cihazlarda)
+  if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 600]);
+
+  // tarayici bildirimi (uygulama arka plandayken de gorunur)
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("circle8 · " + title, {
+      body: source + " · " + new Date().toLocaleTimeString("tr-TR"),
+      icon: "icon-192.png"
+    });
+  }
+
+  // sesli anons (destekleyen cihazlarda)
+  try {
+    const u = new SpeechSynthesisUtterance(title + ". " + source);
+    u.lang = "tr-TR";
+    u.rate = 1.0;
+    speechSynthesis.speak(u);
+  } catch (_) {}
+
   beep();
   alarmTimer = setInterval(beep, 500);
 }
