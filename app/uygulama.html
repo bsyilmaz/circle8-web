@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f4f5f7">
+<meta name="theme-color" content="#f4f5f6">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -14,212 +14,148 @@
 <title>circle8</title>
 <style>
   :root {
-    --bg: #f4f5f6;
-    --card: #ffffff;
-    --text: #14181a;
-    --text2: #5c6468;
-    --text3: #8b9296;
-    --line: #e4e7e8;
-    --green: #1c6f66;
-    --red: #c62828;
-    --amber: #9a6200;
-    --blue: #1c6f66;
-    --radius: 14px;
-    --gap: 12px;
-    --pad: 16px;
+    --bg: #f4f5f6; --card: #ffffff;
+    --text: #14181a; --text2: #5c6468; --text3: #8b9296; --line: #e4e7e8;
+    --green: #1c6f66; --red: #c62828; --amber: #9a6200; --blue: #1c6f66;
+    --radius: 16px; --pad: 18px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html { height: 100%; }
+  html, body { height: 100%; }
   body {
     background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
-    font-size: 15px; line-height: 1.45;
+    font-size: 15px; line-height: 1.5;
   }
-  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding: 0 0 88px; }
+  .app { max-width: 480px; margin: 0 auto; min-height: 100vh; padding-bottom: calc(86px + env(safe-area-inset-bottom)); }
 
-  /* ---------- Header ---------- */
-  header {
-    padding: calc(18px + env(safe-area-inset-top)) var(--pad) 10px;
-    display: flex; align-items: center; gap: 12px;
-  }
+  /* Header */
+  header { padding: calc(20px + env(safe-area-inset-top)) var(--pad) 8px; display: flex; align-items: center; gap: 12px; }
   .avatar {
     width: 42px; height: 42px; border-radius: 50%; flex: none;
-    background: #1c6f66; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px; font-weight: 600; letter-spacing: 0.2px;
+    background: var(--green); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600;
   }
-  .who .name { font-size: 20px; font-weight: 700; letter-spacing: -0.2px; }
-  .who .sub { font-size: 13px; color: var(--text2); margin-top: 1px; }
-  .conn {
-    margin-left: auto; display: flex; align-items: center; gap: 6px;
-    font-size: 12.5px; color: var(--text2); font-weight: 600;
-  }
+  .who .name { font-size: 21px; font-weight: 700; letter-spacing: -0.3px; }
+  .who .sub { font-size: 12.5px; color: var(--text2); }
+  .conn { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; color: var(--text2); }
   .conn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text3); }
-  .conn.on .dot { background: var(--green); }
   .conn.on { color: var(--green); }
+  .conn.on .dot { background: var(--green); }
 
-  /* ---------- Durum şeridi ---------- */
-  .summary {
-    margin: 6px var(--pad) 18px; padding: 14px 16px;
-    background: var(--card); border-radius: var(--radius);
-    display: flex; align-items: center; gap: 12px;
-  }
+  /* Durum şeridi */
+  .summary { margin: 10px var(--pad) 14px; padding: 15px 17px; background: var(--card); border-radius: var(--radius); display: flex; gap: 12px; align-items: center; }
   .summary .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); flex: none; }
   .summary.warn .dot { background: var(--amber); }
   .summary.danger .dot { background: var(--red); }
-  .summary .title { font-size: 15px; font-weight: 650; }
-  .summary .sub { font-size: 12.5px; color: var(--text2); margin-top: 1px; }
+  .summary .title { font-size: 15px; font-weight: 700; }
+  .summary .sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
 
-  /* ---------- Kartlar ---------- */
-  .card {
-    background: var(--card); border-radius: var(--radius);
-    margin: 0 var(--pad) var(--gap); padding: var(--pad);
-  }
-  .card h2 {
-    font-size: 12px; font-weight: 650; text-transform: uppercase;
-    letter-spacing: 0.7px; color: var(--text3); margin-bottom: 12px;
-  }
-  .note { font-size: 12px; color: var(--text2); line-height: 1.55; }
+  /* Kart */
+  .card { background: var(--card); border-radius: var(--radius); margin: 0 var(--pad) 12px; padding: var(--pad); }
+  .card h2 { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 12px; }
+  .note { font-size: 11.5px; color: var(--text2); line-height: 1.55; }
 
-  /* Nabız hero: halka + ECG */
-  .hr-hero { position: relative; display: flex; justify-content: center; padding: 6px 0 2px; }
-  .hr-hero svg { width: 220px; height: 220px; }
+  /* Nabız hero */
+  .hr-hero { position: relative; display: flex; justify-content: center; }
+  .hr-hero svg { width: 210px; height: 210px; }
   .ring-track { fill: none; stroke: #dceae7; stroke-width: 13; }
   .ring-arc {
     fill: none; stroke: var(--green); stroke-width: 13; stroke-linecap: round;
-    stroke-dasharray: 534; stroke-dashoffset: 534;
-    transition: stroke-dashoffset 0.9s ease;
+    stroke-dasharray: 534; stroke-dashoffset: 534; transition: stroke-dashoffset 0.9s ease;
     transform: rotate(-90deg); transform-origin: center;
   }
-  .ring-center {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -52%);
-    text-align: center;
-  }
-  .hr-big { font-size: 58px; font-weight: 800; letter-spacing: -2px; line-height: 1; font-variant-numeric: tabular-nums; }
-  .hr-unit { font-size: 13px; color: var(--text2); font-weight: 600; margin-top: 4px; }
+  .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -52%); text-align: center; }
+  .hr-big { font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .hr-unit { font-size: 12.5px; color: var(--text2); font-weight: 600; margin-top: 4px; }
   .hr-time { font-size: 11px; color: var(--text3); margin-top: 6px; }
-  #ecgCanvas { width: 100%; height: 64px; margin: 6px 0 4px; }
+  #ecgCanvas { width: 100%; height: 58px; margin: 4px 0 2px; }
   .rx-line {
-    font-family: ui-monospace, Consolas, monospace; font-size: 11px;
-    color: var(--text3); background: #fafbfc; border: 1px solid var(--line);
-    border-radius: 8px; padding: 7px 10px; margin-bottom: 12px;
-    overflow-wrap: anywhere;
+    font-family: ui-monospace, Consolas, monospace; font-size: 10.5px; color: var(--text3);
+    background: #fafbfc; border: 1px solid var(--line); border-radius: 8px;
+    padding: 6px 10px; margin-bottom: 12px; overflow-wrap: anywhere;
   }
   .rx-line.live { color: var(--green); border-color: var(--green); }
-  .measuring-dot {
-    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--green); margin-right: 5px; vertical-align: 1px;
-  }
-  .measuring .measuring-dot { animation: blink 1s infinite; }
-  @keyframes blink { 50% { opacity: 0.25; } }
-  .toggle-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 11px 0 2px;
-  }
-  .toggle-row .lbl { font-size: 13px; font-weight: 650; }
-  .switch {
-    width: 44px; height: 25px; border-radius: 999px; background: #d4d8da;
-    border: none; cursor: pointer; position: relative; flex: none;
-  }
-  .switch::after {
-    content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px;
-    border-radius: 50%; background: #fff; transition: left 0.18s ease;
-  }
-  .switch.on { background: var(--green); }
-  .switch.on::after { left: 22px; }
+  .measuring-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 5px; vertical-align: 1px; }
 
-  /* Vitals listesi */
-  .row {
-    display: flex; align-items: center; gap: 13px;
-    padding: 12px 0; border-bottom: 1px solid var(--line);
-  }
-  .row:last-child { border-bottom: none; padding-bottom: 2px; }
-  .row:first-of-type { padding-top: 2px; }
-  .row .ic {
-    width: 34px; height: 34px; border-radius: 9px; flex: none;
-    background: #f0f1f4; color: #3d4148;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .row .lbl { font-size: 14px; font-weight: 600; }
-  .row .meta { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
-  .row .val {
-    margin-left: auto; text-align: right;
-    font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums;
-  }
-  .row .val small { font-size: 12px; color: var(--text2); font-weight: 600; margin-left: 3px; }
-  .row .val.dim { color: var(--text3); font-weight: 600; }
+  /* Vitals ızgara */
+  .vgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vitem { background: #fafbfc; border-radius: 12px; padding: 13px 14px; }
+  .vitem .vl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; }
+  .vitem .vv { font-size: 21px; font-weight: 800; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .vitem .vv small { font-size: 11px; color: var(--text2); font-weight: 600; margin-left: 2px; }
+  .vitem .vv.dim { color: var(--text3); }
 
   /* Butonlar */
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 12px 16px; border-radius: 11px; border: none;
-    font-size: 14px; font-weight: 650; cursor: pointer;
-    background: #eceef1; color: var(--text);
-    transition: transform 0.08s ease;
+    padding: 13px 18px; border-radius: 12px; border: none;
+    font-size: 14.5px; font-weight: 700; cursor: pointer; background: #eceef1; color: var(--text);
+    transition: transform 0.08s ease; text-decoration: none;
   }
   .btn:active { transform: scale(0.97); }
-  .btn.primary { background: var(--blue); color: #fff; }
-  .btn.block { width: 100%; padding: 15px; font-size: 15px; }
+  .btn.primary { background: var(--green); color: #fff; }
   .btn.danger { background: var(--red); color: #fff; }
-  .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  .btn.block { width: 100%; padding: 16px; font-size: 16px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; }
   .btn-row .btn { flex: 1; }
 
-  /* Konum */
-  #map { width: 100%; height: 210px; border-radius: 11px; background: #e9ebee; }
-  .addr { font-size: 15px; font-weight: 650; margin-top: 12px; }
-  .geo-nums { font-size: 12px; color: var(--text2); margin-top: 2px; font-variant-numeric: tabular-nums; }
-
-  /* Olaylar */
-  .ev {
-    display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: flex-start;
+  /* Rapor */
+  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+  .report-grid .rv { font-size: 25px; font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
+  .report-grid .rl { font-size: 10.5px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: none; }
+  .row .ic {
+    width: 34px; height: 34px; border-radius: 9px; flex: none; background: #f0f1f4; color: #3d4148;
+    display: flex; align-items: center; justify-content: center;
   }
+  .row .lbl { font-size: 14px; font-weight: 650; }
+  .row .meta { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .row .right { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
+  .widget {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 16px 18px; box-shadow: 0 3px 10px rgba(16, 20, 22, 0.06);
+  }
+  .widget .w-top { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--text2); }
+  .widget .w-main { font-size: 18px; font-weight: 750; margin-top: 8px; }
+  .widget .w-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .ev { display: flex; gap: 11px; padding: 10px 0; border-bottom: 1px solid var(--line); }
   .ev:last-child { border-bottom: none; }
-  .ev .eic {
-    width: 32px; height: 32px; border-radius: 8px; flex: none; background: #f0f1f4;
-    display: flex; align-items: center; justify-content: center; color: #3d4148;
-  }
-  .ev.alarm .eic { background: #fbe9e9; color: var(--red); }
-  .ev .etx { font-size: 13.5px; font-weight: 600; }
-  .ev .etm { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
-  .empty { color: var(--text3); font-size: 13px; padding: 16px 0; }
+  .ev.alarm .etx { color: var(--red); }
+  .ev .etx { font-size: 13px; font-weight: 600; }
+  .ev .etm { font-size: 11px; color: var(--text3); }
+  .empty { color: var(--text3); font-size: 12.5px; padding: 12px 0; }
+
+  /* Konum */
+  #map { width: 100%; height: 190px; border-radius: 12px; background: #e9ebee; }
 
   /* Alt menü */
   nav {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(255,255,255,0.94); border-top: 1px solid var(--line);
-    display: flex; max-width: 480px; margin: 0 auto;
-    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(255,255,255,0.95); border-top: 1px solid var(--line);
+    display: flex; max-width: 480px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom);
+    backdrop-filter: blur(10px);
   }
   nav button {
-    flex: 1; background: none; border: none; cursor: pointer; padding: 9px 0 10px;
-    color: var(--text3); font-size: 10.5px; font-weight: 650;
+    flex: 1; background: none; border: none; cursor: pointer; padding: 10px 0 11px;
+    color: var(--text3); font-size: 11px; font-weight: 700;
     display: flex; flex-direction: column; align-items: center; gap: 3px;
   }
-  nav button.active { color: var(--text); }
+  nav button.active { color: var(--green); }
 
   .tabpage { display: none; }
   .tabpage.active { display: block; animation: tabin 0.18s ease; }
-  @keyframes tabin {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: none; }
-  }
+  @keyframes tabin { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
   /* Geliştirici */
-  details.tech {
-    background: var(--card); border-radius: var(--radius);
-    margin: 0 var(--pad) var(--gap); padding: 14px var(--pad);
-  }
-  details.tech summary { cursor: pointer; font-size: 13px; font-weight: 650; color: var(--text2); }
+  details.tech { background: var(--card); border-radius: var(--radius); margin: 0 var(--pad) 12px; padding: 14px var(--pad); }
+  details.tech summary { cursor: pointer; font-size: 13px; font-weight: 700; color: var(--text2); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .chip {
-    background: #f0f1f4; border: none; color: var(--text);
-    border-radius: 9px; padding: 9px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer;
-  }
+  .chip { background: #f0f1f4; border: none; color: var(--text); border-radius: 9px; padding: 9px 12px; font-size: 12px; font-weight: 650; cursor: pointer; }
   #rawlog {
-    margin-top: 12px; max-height: 200px; overflow-y: auto;
+    margin-top: 12px; max-height: 190px; overflow-y: auto;
     background: #fafbfc; border: 1px solid var(--line); border-radius: 9px; padding: 9px;
-    font-family: ui-monospace, Consolas, monospace; font-size: 11px; line-height: 1.75;
-    color: var(--text2);
+    font-family: ui-monospace, Consolas, monospace; font-size: 10.5px; line-height: 1.75; color: var(--text2);
   }
   .logrow { display: flex; gap: 8px; }
   .logrow .hex { color: var(--text); font-weight: 600; }
@@ -229,34 +165,12 @@
     border: 1px solid var(--line); background: #fafbfc; color: var(--text);
     font-family: ui-monospace, Consolas, monospace; font-size: 12px;
   }
-
-  /* Rapor + grafik + widget */
-  .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; }
-  .report-grid .rv { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
-  .report-grid .rl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 2px; }
-  .bars { display: flex; align-items: flex-end; gap: 8px; height: 84px; margin-top: 8px; }
-  .bars .bwrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; height: 100%; justify-content: flex-end; }
-  .bars .b { width: 100%; max-width: 26px; background: var(--green); border-radius: 5px; min-height: 3px; opacity: 0.85; }
-  .bars .b.empty { background: var(--line); }
-  .bars .bd { font-size: 10px; color: var(--text3); }
-  .med-row, .care-row {
-    display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line);
-  }
-  .med-row:last-child, .care-row:last-child { border-bottom: none; }
-  .med-row .lbl, .care-row .lbl { font-size: 14px; font-weight: 600; }
-  .med-row .meta, .care-row .meta { font-size: 11.5px; color: var(--text3); margin-top: 1px; }
-  .med-row .time { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
-  .widget {
-    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
-    padding: 16px 18px; box-shadow: 0 3px 10px rgba(16, 20, 22, 0.06);
-  }
-  .widget .w-top { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--text2); }
-  .widget .w-main { font-size: 18px; font-weight: 750; margin-top: 8px; }
-  .widget .w-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
-  .demo-tag {
-    display: inline-block; font-size: 10px; font-weight: 700; color: var(--amber);
-    border: 1px solid var(--amber); border-radius: 5px; padding: 0 5px; margin-left: 6px; vertical-align: 2px;
-  }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 2px; }
+  .toggle-row .lbl { font-size: 13px; font-weight: 650; }
+  .switch { width: 44px; height: 25px; border-radius: 999px; background: #d4d8da; border: none; cursor: pointer; position: relative; flex: none; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: #fff; transition: left 0.18s ease; }
+  .switch.on { background: var(--green); }
+  .switch.on::after { left: 22px; }
 
   /* Alarm */
   #alarm {
@@ -265,20 +179,17 @@
     flex-direction: column; text-align: center; padding: 28px; z-index: 99;
   }
   #alarm.show { display: flex; }
-  #alarm .big2 { font-size: 34px; font-weight: 750; letter-spacing: -0.5px; line-height: 1.15; }
+  #alarm .big2 { font-size: 32px; font-weight: 780; letter-spacing: -0.5px; line-height: 1.15; }
   #alarm .sub { font-size: 15px; opacity: 0.92; margin-top: 10px; }
-  #alarm .actions { display: flex; gap: 10px; margin-top: 30px; width: 100%; max-width: 340px; }
-  #alarm a, #alarm button {
-    flex: 1; padding: 15px 18px; border-radius: 12px; font-size: 15px; font-weight: 700;
-    text-decoration: none; border: none; cursor: pointer;
-  }
+  #alarm .actions { display: flex; gap: 10px; margin-top: 28px; width: 100%; max-width: 340px; }
+  #alarm a, #alarm button { flex: 1; padding: 15px 18px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; }
   #alarm .call112 { background: #fff; color: var(--red); }
   #alarm .off { background: rgba(255,255,255,0.18); color: #fff; }
 
   #toast {
-    position: fixed; bottom: calc(84px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+    position: fixed; bottom: calc(86px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
     background: #2b3038; color: #fff; padding: 12px 18px; border-radius: 11px;
-    font-size: 13.5px; display: none; z-index: 100; max-width: 84vw; text-align: center;
+    font-size: 13px; display: none; z-index: 100; max-width: 84vw; text-align: center;
   }
 </style>
 </head>
@@ -289,7 +200,7 @@
     <div class="avatar" id="avatar">B</div>
     <div class="who">
       <div class="name" id="patientName">Babam</div>
-      <div class="sub" id="patientSub">68 yaşında · circle8 bileklik</div>
+      <div class="sub" id="patientSub">circle8 bileklik</div>
     </div>
     <div class="conn" id="badgeConn"><span class="dot"></span><span id="connText">Bağlı değil</span></div>
   </header>
@@ -302,7 +213,7 @@
     </div>
   </div>
 
-  <!-- ============ DURUM ============ -->
+  <!-- ===== DURUM ===== -->
   <section class="tabpage active" id="tab-durum">
     <div class="card">
       <h2>Nabız</h2>
@@ -320,127 +231,35 @@
       <canvas id="ecgCanvas"></canvas>
       <div class="rx-line" id="rxLine">Gelen veri: henüz paket yok</div>
       <button class="btn primary block" id="btnMeasure">Ölçüm başlat</button>
-      <div class="toggle-row">
-        <div class="lbl"><span class="measuring-dot"></span>Otomatik ölçüm (sürekli takip)</div>
-        <button class="switch" id="btnAuto" aria-label="Otomatik ölçüm"></button>
-      </div>
-      <div class="note" style="margin-top:6px">
-        Açıkken bileklik gün boyu düzenli aralıklarla ölçüm yapar (protokol: 0x19).
-      </div>
     </div>
 
     <div class="card">
-      <h2>Sağlık Verileri</h2>
-      <div class="row">
-        <div class="ic" data-ic="droplet"></div>
-        <div><div class="lbl">Kan oksijeni</div><div class="meta">Ölçümle birlikte güncellenir</div></div>
-        <div class="val dim" id="spo2Val">--<small>%</small></div>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="activity"></div>
-        <div><div class="lbl">Tansiyon</div><div class="meta">Ölçümle birlikte güncellenir</div></div>
-        <div class="val dim" id="bpVal">--<small>mmHg</small></div>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="thermometer"></div>
-        <div><div class="lbl">Vücut ısısı</div><div class="meta">Prototip 1'de sensörden</div></div>
-        <div class="val dim" id="tempVal">--<small>°C</small></div>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="activity"></div>
-        <div><div class="lbl">Adım</div><div class="meta" id="stepsMeta">Bileklikten senkron bekleniyor</div></div>
-        <div class="val dim" id="stepsVal">--</div>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="moon"></div>
-        <div><div class="lbl">Uyku</div><div class="meta">Dün gece</div></div>
-        <div class="val dim" id="sleepVal">--<small>sa</small></div>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="battery"></div>
-        <div><div class="lbl">Bileklik pili</div><div class="meta">Canlı okuma</div></div>
-        <div class="val" id="batVal">--<small>%</small></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Takip</h2>
-      <div class="lbl" style="font-size:13px;font-weight:650">Nabız · son 24 saat</div>
-      <canvas id="hrChart" style="width:100%;height:70px;margin:8px 0 16px"></canvas>
-      <div class="lbl" style="font-size:13px;font-weight:650">Adım · bu hafta</div>
-      <div class="bars" id="weekBars"></div>
-      <div class="note" id="chartNote" style="margin-top:10px">
-        Grafikler cihazdan gelen verilerle dolar. Henüz veri yoksa boş görünür.
+      <h2>Sağlık</h2>
+      <div class="vgrid">
+        <div class="vitem"><div class="vl">Kan oksijeni</div><div class="vv dim" id="spo2Val">--<small>%</small></div></div>
+        <div class="vitem"><div class="vl">Tansiyon</div><div class="vv dim" id="bpVal">--<small>mmHg</small></div></div>
+        <div class="vitem"><div class="vl">Adım</div><div class="vv dim" id="stepsVal">--</div></div>
+        <div class="vitem"><div class="vl">Bileklik pili</div><div class="vv" id="batVal">--<small>%</small></div></div>
       </div>
     </div>
 
     <div class="card">
       <h2>Konum</h2>
-      <div class="addr" id="addrMini">Konum bekleniyor</div>
-      <div class="geo-nums" id="geoMini">--</div>
+      <div style="font-size:15px;font-weight:700" id="addrMini">Konum bekleniyor</div>
+      <div class="note" id="geoMini" style="margin-top:2px">--</div>
+      <div id="map" style="display:none;margin-top:12px"></div>
       <div class="btn-row">
-        <button class="btn" id="btnFind">Bilekliği bul</button>
         <button class="btn" id="btnLocate">Haritada aç</button>
+        <button class="btn" id="btnFind">Bilekliği bul</button>
       </div>
     </div>
 
-    <div style="padding: 4px var(--pad) 0">
+    <div style="padding: 2px var(--pad) 0">
       <button class="btn danger block" id="btnSos">Acil yardım iste</button>
-      <div class="note" style="margin-top:8px">Düğme, acil durum bildirimini tetikler ve kayda geçer.</div>
-    </div>
-
-    <div class="card" style="margin-top:12px">
-      <h2>Acil Kişiler</h2>
-      <div class="row">
-        <div class="ic" data-ic="phone"></div>
-        <div><div class="lbl">Ayşe (kızı)</div><div class="meta">Birincil kişi</div></div>
-        <a class="btn" href="tel:+905000000000" style="margin-left:auto;padding:9px 14px;text-decoration:none">Ara</a>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="phone"></div>
-        <div><div class="lbl">Dr. Mehmet</div><div class="meta">Aile hekimi</div></div>
-        <a class="btn" href="tel:+905000000001" style="margin-left:auto;padding:9px 14px;text-decoration:none">Ara</a>
-      </div>
-      <div class="note" style="margin-top:8px">
-        Acil durumda bu kişiler sırayla aranır. Numaralar gerçek kullanımda
-        uygulama ayarlarından düzenlenir.
-      </div>
     </div>
   </section>
 
-  <!-- ============ KONUM ============ -->
-  <section class="tabpage" id="tab-konum">
-    <div class="card">
-      <h2>Canlı Konum</h2>
-      <div id="map"></div>
-      <div class="addr" id="addrText">Konum bekleniyor</div>
-      <div class="geo-nums" id="geoText">--</div>
-      <div class="btn-row">
-        <button class="btn primary" id="btnLocate2">Konumu yenile</button>
-      </div>
-      <div class="note" style="margin-top:12px">
-        Bu sürümde konum telefonun konum hizmetinden alınır. Prototip 1'de konum,
-        bileklikteki uydu alıcısından (GNSS) gelir ve hücresel ağ üzerinden (LTE-M) iletilir.
-      </div>
-    </div>
-    <div class="card">
-      <h2>Güvenli Bölge</h2>
-      <div class="note">
-        "Ev" olarak işaretlenen bölgeye giriş ve çıkışlarda bildirim alırsınız.
-        Bu özellik Prototip 1 ile birlikte çalışır.
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ OLAYLAR ============ -->
-  <section class="tabpage" id="tab-olaylar">
-    <div class="card">
-      <h2>Olay Geçmişi</h2>
-      <div id="eventList"><div class="empty">Kayıt yok. Düşme, yardım çağrıları ve bağlantı değişimleri burada listelenir.</div></div>
-    </div>
-  </section>
-
-  <!-- ============ RAPOR ============ -->
+  <!-- ===== RAPOR ===== -->
   <section class="tabpage" id="tab-rapor">
     <div class="card">
       <h2>Babam'ın Haftası</h2>
@@ -450,9 +269,6 @@
         <div><div class="rv" id="repSleep">--</div><div class="rl">Ort. uyku</div></div>
         <div><div class="rv" id="repEvents">--</div><div class="rl">Olay</div></div>
       </div>
-      <div class="note" id="repNote" style="margin-top:12px">
-        Bu hafta için veri toplanıyor. Rapor her pazar güncellenir.
-      </div>
       <div class="btn-row">
         <button class="btn primary" id="btnShare">Raporu paylaş</button>
         <button class="btn" id="btnDemo">Sahne demosu</button>
@@ -460,25 +276,19 @@
     </div>
 
     <div class="card">
+      <h2>Acil Kişiler</h2>
+      <div id="careList"></div>
+      <button class="btn" id="btnAddCare" style="margin-top:10px">Aileye ekle</button>
+    </div>
+
+    <div class="card">
       <h2>İlaç Hatırlatma</h2>
       <div id="medList"></div>
       <button class="btn" id="btnAddMed" style="margin-top:10px">Hatırlatma ekle</button>
-      <div class="note" style="margin-top:8px">
-        Hatırlatmalar bilekliğe iletilir; zamanı geldiğinde bileklik titreşimle uyarır.
-      </div>
     </div>
 
     <div class="card">
-      <h2>Bakıcı Ekibi</h2>
-      <div id="careList"></div>
-      <button class="btn" id="btnAddCare" style="margin-top:10px">Aileye ekle</button>
-      <div class="note" style="margin-top:8px">
-        Eklenen kişiler olay bildirimlerini alır ve raporu görebilir.
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Telefon Widget'ı</h2>
+      <h2>Widget</h2>
       <div class="widget">
         <div class="w-top">
           <svg width="22" height="15" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
@@ -489,36 +299,35 @@
         <div class="w-main"><b id="widgetName">Babam</b> · <span id="widgetStatus">İyi</span></div>
         <div class="w-sub">Nabız <span id="widgetHr">--</span> · Son olay: <span id="widgetEvent">yok</span></div>
       </div>
-      <div class="note" style="margin-top:8px">
-        Ana ekran widget'ı: bakıcı uygulamayı açmadan durumu görür (Prototip 1 özelliği).
-      </div>
+    </div>
+
+    <div class="card">
+      <h2>Olaylar</h2>
+      <div id="eventList"><div class="empty">Kayıt yok.</div></div>
     </div>
   </section>
 
-  <!-- ============ CİHAZ ============ -->
+  <!-- ===== CİHAZ ===== -->
   <section class="tabpage" id="tab-cihaz">
     <div class="card">
       <h2>Bileklik</h2>
       <div class="row">
         <div class="ic" data-ic="watch"></div>
-        <div><div class="lbl" id="devName">Bağlı cihaz yok</div><div class="meta">circle8 prototip donanımı</div></div>
-        <div class="val" id="batBig">--<small>%</small></div>
-      </div>
-      <div class="row">
-        <div class="ic" data-ic="info"></div>
-        <div><div class="lbl">Cihaz bilgisi</div><div class="meta" id="devinfo">Bağlantı bekleniyor</div></div>
+        <div><div class="lbl" id="devName">Bağlı cihaz yok</div><div class="meta" id="devinfo">Bağlantı bekleniyor</div></div>
+        <div class="right" id="batBig">--%</div>
       </div>
       <div class="btn-row">
         <button class="btn primary" id="btnConnect">Bağlan</button>
         <button class="btn" id="btnDisconnect">Bağlantıyı kes</button>
       </div>
-      <div class="note" style="margin-top:8px">
-        "Bağlan" yalnızca M81b bilekliğini listeler.
+      <div class="toggle-row">
+        <div class="lbl">Otomatik ölçüm (sürekli takip)</div>
+        <button class="switch" id="btnAuto" aria-label="Otomatik ölçüm"></button>
       </div>
     </div>
 
     <details class="tech">
-      <summary>Geliştirici seçenekleri: bileklik komutları</summary>
+      <summary>Geliştirici seçenekleri</summary>
       <div class="chips">
         <button class="chip" data-cmd="hrstart">Nabız başlat</button>
         <button class="chip" data-cmd="hrstop">Nabız durdur</button>
@@ -526,19 +335,9 @@
         <button class="chip" data-cmd="time">Saat kur</button>
         <button class="chip" data-cmd="steps">Adım sor</button>
         <button class="chip" data-cmd="bat">Pil sor</button>
+        <button class="chip" id="btnConnectAll">Tüm cihazları göster</button>
       </div>
       <div class="note" id="cmdStatus" style="margin-top:10px">Komut kanalı 0x33F3, cevap kanalı 0x33F4.</div>
-    </details>
-
-    <details class="tech">
-      <summary>Geliştirici seçenekleri: ham veri akışı</summary>
-      <div class="cmdrow">
-        <button class="chip" id="btnConnectAll">Tüm cihazları göster (sorun giderme)</button>
-      </div>
-      <div class="note" style="margin-top:8px">
-        Gelen paketlerdeki "SOS ata" bağlantısı, o paket geldiğinde acil alarmı tetikler.
-        Protokol dökümü: demo/M81_PROTOKOL.md
-      </div>
       <input class="hex" id="cmdHex" placeholder="onaltılık veri: A0 01 02">
       <div class="chips">
         <button class="chip" id="btnSend33f3">0x33F3 kanalına gönder</button>
@@ -551,8 +350,7 @@
       <h2>Uygulama</h2>
       <div class="note">
         circle8, ekransız ve telefonsuz çalışan, hücresel ağ (LTE-M) ve uydu konumu (GNSS)
-        destekli sağlık ve güvenlik bilekliğidir. Bu uygulama yakınları için tasarlandı:
-        nabız, konum ve acil durumları tek ekranda gösterir.
+        destekli sağlık ve güvenlik bilekliğidir. Bu uygulama yakınları için tasarlandı.
       </div>
     </div>
   </section>
@@ -560,8 +358,6 @@
 
 <nav>
   <button class="active" data-tab="durum"><span class="ic" data-ic="home"></span>Durum</button>
-  <button data-tab="konum"><span class="ic" data-ic="pin"></span>Konum</button>
-  <button data-tab="olaylar"><span class="ic" data-ic="bell"></span>Olaylar</button>
   <button data-tab="rapor"><span class="ic" data-ic="activity"></span>Rapor</button>
   <button data-tab="cihaz"><span class="ic" data-ic="watch"></span>Cihaz</button>
 </nav>
@@ -582,29 +378,22 @@
 <script>
 "use strict";
 
-/* ---------------- İkonlar (çizgi, tek çizim) ---------------- */
+/* ---------------- İkonlar ---------------- */
 const ICONS = {
   home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.5"/>',
-  pin: '<path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>',
-  bell: '<path d="M18 9a6 6 0 1 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 15 18 9z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/>',
-  watch: '<circle cx="12" cy="12" r="5.2"/><path d="M9 7.2 8.2 3h7.6L15 7.2"/><path d="M9 16.8 8.2 21h7.6L15 16.8"/>',
-  heart: '<path d="M20.4 5.1a5 5 0 0 0-7.1 0L12 6.4l-1.3-1.3a5 5 0 1 0-7.1 7.1L12 20.6l8.4-8.4a5 5 0 0 0 0-7.1z"/>',
-  droplet: '<path d="M12 3.2 17 8.5a7 7 0 1 1-10 0z"/>',
-  thermometer: '<path d="M14 14.5V5a2 2 0 1 0-4 0v9.5a4 4 0 1 0 4 0z"/><path d="M12 8.5v6"/>',
   activity: '<path d="M22 12h-4.5l-3 8-5-16-3 8H2"/>',
-  moon: '<path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5a7 7 0 0 0 9.7 9.7z"/>',
-  battery: '<rect x="2.5" y="8" width="16" height="9" rx="2"/><path d="M21 11.5v2"/><rect x="5" y="10.5" width="8" height="4" rx="0.8" fill="currentColor" stroke="none"/>',
+  watch: '<circle cx="12" cy="12" r="5.2"/><path d="M9 7.2 8.2 3h7.6L15 7.2"/><path d="M9 16.8 8.2 21h7.6L15 16.8"/>',
+  phone: '<path d="M21 16.5v2.6a1.8 1.8 0 0 1-2 1.8A17.5 17.5 0 0 1 3.1 5a1.8 1.8 0 0 1 1.8-2h2.6a1.8 1.8 0 0 1 1.8 1.5c.1 1 .4 2 .7 2.9a1.8 1.8 0 0 1-.4 1.9L8.5 10.6a14 14 0 0 0 4.9 4.9l1.3-1.1a1.8 1.8 0 0 1 1.9-.4c.9.3 1.9.6 2.9.7a1.8 1.8 0 0 1 1.5 1.8z"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 7.6v.2"/>',
   alert: '<path d="M12 3.5 22 20H2z"/><path d="M12 10v4"/><path d="M12 17v.2"/>',
-  phone: '<path d="M21 16.5v2.6a1.8 1.8 0 0 1-2 1.8A17.5 17.5 0 0 1 3.1 5a1.8 1.8 0 0 1 1.8-2h2.6a1.8 1.8 0 0 1 1.8 1.5c.1 1 .4 2 .7 2.9a1.8 1.8 0 0 1-.4 1.9L8.5 10.6a14 14 0 0 0 4.9 4.9l1.3-1.1a1.8 1.8 0 0 1 1.9-.4c.9.3 1.9.6 2.9.7a1.8 1.8 0 0 1 1.5 1.8z"/>',
   link: '<path d="M10 13.5a4 4 0 0 0 5.7 0l3-3a4 4 0 1 0-5.7-5.7l-1.6 1.6"/><path d="M14 10.5a4 4 0 0 0-5.7 0l-3 3a4 4 0 1 0 5.7 5.7l1.6-1.6"/>'
 };
 function paintIcons() {
   document.querySelectorAll("[data-ic]").forEach((el) => {
     const name = el.getAttribute("data-ic");
     if (!ICONS[name] || el.dataset.done) return;
-    el.innerHTML =
-      `<svg width="${el.closest("nav") ? 21 : 18}" height="${el.closest("nav") ? 21 : 18}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
+    const size = el.closest("nav") ? 21 : 18;
+    el.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
     el.dataset.done = "1";
     el.style.display = "flex";
     el.style.alignItems = "center";
@@ -617,7 +406,7 @@ paintIcons();
 let device = null, gattServer = null, txChar = null, tx2Char = null;
 let sosPattern = null, packetCount = 0;
 let map = null, marker = null, alarmTimer = null, audioCtx = null;
-const hrHistory = [];
+let measuring = false;
 
 const $ = (id) => document.getElementById(id);
 
@@ -643,15 +432,14 @@ function addEvent(text, kind, icon) {
   renderEvents();
 }
 function renderEvents() {
-  if (!events.length) return;
   const list = $("eventList");
+  if (!events.length) return;
   list.innerHTML = "";
   for (const e of events) {
     const row = document.createElement("div");
     row.className = "ev" + (e.kind === "alarm" ? " alarm" : "");
-    row.innerHTML =
-      `<div class="eic" data-ic="${e.icon}"></div><div><div class="etx">${e.text}</div>` +
-      `<div class="etm">${e.t.toLocaleString("tr-TR")}</div></div>`;
+    row.innerHTML = `<div class="ic" data-ic="${e.icon}"></div><div><div class="etx">${e.text}</div>` +
+                    `<div class="etm">${e.t.toLocaleString("tr-TR")}</div></div>`;
     list.appendChild(row);
   }
   paintIcons();
@@ -664,7 +452,7 @@ document.querySelectorAll("nav button").forEach((b) => {
     document.querySelectorAll(".tabpage").forEach((x) => x.classList.remove("active"));
     b.classList.add("active");
     $("tab-" + b.dataset.tab).classList.add("active");
-    if (b.dataset.tab === "konum" && map) setTimeout(() => map.invalidateSize(), 80);
+    if (b.dataset.tab === "cihaz" && map) setTimeout(() => map.invalidateSize(), 80);
   });
 });
 
@@ -675,17 +463,15 @@ ringArc.style.strokeDasharray = RING_LEN;
 ringArc.style.strokeDashoffset = RING_LEN;
 
 function setRing(v) {
-  // halka: 40-140 bpm araligini 0-100% olarak gosterir
   const pct = Math.max(0, Math.min(1, (v - 40) / 100));
   ringArc.style.strokeDashoffset = RING_LEN * (1 - pct);
 }
 
 const ecg = $("ecgCanvas");
 const ectx = ecg.getContext("2d");
-let ecgPhase = 0, ecgRunning = false, ecgRaf = null;
+let ecgPhase = 0, ecgRunning = false;
 
 function ecgY(t) {
-  // stilize PQRST dalgasi
   const p = t % 1;
   if (p < 0.10) return 0;
   if (p < 0.16) return Math.sin((p - 0.10) / 0.06 * Math.PI) * 0.14;
@@ -701,7 +487,7 @@ function ecgY(t) {
 
 function drawEcg(step) {
   const w = (ecg.width = ecg.clientWidth * devicePixelRatio);
-  const h = (ecg.height = 64 * devicePixelRatio);
+  const h = (ecg.height = 58 * devicePixelRatio);
   ectx.clearRect(0, 0, w, h);
   const mid = h * 0.62;
   if (!ecgRunning && !step) {
@@ -728,9 +514,8 @@ function drawEcg(step) {
 
 function ecgLoop() {
   drawEcg(true);
-  if (ecgRunning) ecgRaf = requestAnimationFrame(ecgLoop);
+  if (ecgRunning) requestAnimationFrame(ecgLoop);
 }
-
 function setEcg(on) {
   ecgRunning = on;
   if (on) ecgLoop();
@@ -743,9 +528,10 @@ function pushHr(v) {
   $("hrVal").textContent = v;
   $("hrTime").innerHTML = '<span class="measuring-dot"></span>Son ölçüm ' + new Date().toLocaleTimeString("tr-TR");
   setRing(v);
+  updateWidget(v, null, null);
 }
 
-/* ---------------- BLE ---------------- */
+/* ---------------- Yardımcılar ---------------- */
 function toHex(dv) {
   const b = [];
   for (let i = 0; i < dv.byteLength; i++)
@@ -753,12 +539,78 @@ function toHex(dv) {
   return b.join(" ");
 }
 
-async function connectFlow(all) {
-  if (!("bluetooth" in navigator)) {
-    toast("Bu tarayıcı Bluetooth bağlantısını desteklemiyor. Android Chrome kullanın.");
+/* ---------------- Ham akış + SOS eşleme ---------------- */
+function logPacket(src, hex) {
+  packetCount++;
+  const raw = $("rawlog");
+  if (packetCount === 1) raw.innerHTML = "";
+  const row = document.createElement("div");
+  row.className = "logrow";
+  row.innerHTML =
+    `<span>${new Date().toLocaleTimeString("tr-TR")}</span>` +
+    `<span class="hex">${hex || "(boş)"}</span>` +
+    `<span class="sos">${sosPattern === hex ? "eşleşti" : "SOS ata"}</span>`;
+  row.querySelector(".sos").addEventListener("click", (ev) => {
+    sosPattern = hex;
+    ev.target.textContent = "eşleşti";
+    addEvent("Acil alarm paketi eşlendi: " + hex, "info", "link");
+    toast("Eşlendi. Bu paket geldiğinde acil alarm çalışır.");
+  });
+  raw.prepend(row);
+  while (raw.children.length > 120) raw.removeChild(raw.lastChild);
+  if (sosPattern !== null && hex === sosPattern) triggerAlarm("Düşme algılandı", "Bileklik olayı");
+}
+
+/* ---------------- Veri ayrıştırıcı (APK parser çözümlendi) ---------------- */
+function onPacket(hex) {
+  logPacket("rx", hex);
+  const b = hex.split(" ").map((x) => parseInt(x, 16));
+
+  const rx = $("rxLine");
+  rx.classList.add("live");
+  rx.textContent = "Gelen veri (" + new Date().toLocaleTimeString("tr-TR") + "): " + hex;
+
+  // sensör çerçevesi: [1]=nabız [2]=sistolik [3]=diyastolik [4]=SpO2 [5]=yorgunluk
+  if (b.length >= 6 && b[1] >= 30 && b[1] <= 200 && b[2] >= 60 && b[2] <= 220 &&
+      b[3] >= 30 && b[3] <= 150 && b[4] >= 70 && b[4] <= 100) {
+    pushHr(b[1]);
+    $("spo2Val").innerHTML = b[4] + "<small>%</small>";
+    $("spo2Val").classList.remove("dim");
+    $("bpVal").innerHTML = b[2] + "/" + b[3] + "<small>mmHg</small>";
+    $("bpVal").classList.remove("dim");
+    $("hrTime").innerHTML = '<span class="measuring-dot"></span>Canlı · ' + new Date().toLocaleTimeString("tr-TR");
     return;
   }
-  // alarm bildirimleri icin izin (bir kez sorulur)
+
+  // periyodik ölçüm: [1..4]=zaman LE, [5]=nabız
+  if (b.length >= 6 && measuring && b[5] >= 30 && b[5] <= 200) {
+    pushHr(b[5]);
+    if (b[6] >= 70 && b[6] <= 100) {
+      $("spo2Val").innerHTML = b[6] + "<small>%</small>";
+      $("spo2Val").classList.remove("dim");
+    }
+    $("hrTime").innerHTML = '<span class="measuring-dot"></span>Otomatik ölçüm · ' + new Date().toLocaleTimeString("tr-TR");
+    return;
+  }
+
+  // adım çerçevesi: [1..4] = adım (LE32)
+  if (b[0] === 0x03 || b[0] === 0x83 || b[0] === 0x13) {
+    if (b.length >= 5) {
+      const steps = (b[1] | (b[2] << 8) | (b[3] << 16) | (b[4] << 24)) >>> 0;
+      if (steps > 0 && steps < 200000) {
+        $("stepsVal").innerHTML = steps.toLocaleString("tr-TR");
+        $("stepsVal").classList.remove("dim");
+      }
+    }
+  }
+}
+
+/* ---------------- BLE ---------------- */
+async function connectFlow(all) {
+  if (!("bluetooth" in navigator)) {
+    toast("Bu tarayıcı Bluetooth desteklemiyor. Android Chrome kullanın.");
+    return;
+  }
   if ("Notification" in window && Notification.permission === "default") {
     try { await Notification.requestPermission(); } catch (_) {}
   }
@@ -767,16 +619,12 @@ async function connectFlow(all) {
       acceptAllDevices: true,
       optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
     } : {
-      // dar liste: bileklik adaylari (isimden veya bilinen servislerden taninir)
-      filters: [
-        { namePrefix: "M81b" }
-      ],
+      filters: [{ namePrefix: "M81b" }],
       optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
     });
     gattServer = await device.gatt.connect();
     const name = device.name || "Bilinmeyen cihaz";
 
-    // kopma takibi
     device.addEventListener("gattserverdisconnected", () => {
       $("badgeConn").classList.remove("on");
       $("connText").textContent = "Bağlı değil";
@@ -784,13 +632,10 @@ async function connectFlow(all) {
       addEvent("Bileklik bağlantısı koptu", "info", "link");
     });
 
-    if (!/M81/i.test(name)) {
-      toast("Dikkat: \"" + name + "\" seçildi. Bileklik M81b-105C olmalı.");
-    }
     $("badgeConn").classList.add("on");
     $("connText").textContent = "Keşif…";
     $("devName").textContent = name;
-    setStatus("", "Cihaz bulundu", "Servisler keşfediliyor, birkaç saniye…");
+    setStatus("", "Cihaz bulundu", "Servisler keşfediliyor…");
     addEvent("Bileklik bağlandı: " + name, "info", "link");
 
     try {
@@ -800,17 +645,17 @@ async function connectFlow(all) {
       bc.addEventListener("characteristicvaluechanged", (e) => {
         const p = e.target.value.getUint8(0);
         $("batVal").innerHTML = p + "<small>%</small>";
-        $("batBig").innerHTML = p + "<small>%</small>";
+        $("batBig").textContent = p + "%";
       });
       const b = await bc.readValue();
       $("batVal").innerHTML = b.getUint8(0) + "<small>%</small>";
-      $("batBig").innerHTML = b.getUint8(0) + "<small>%</small>";
+      $("batBig").textContent = b.getUint8(0) + "%";
     } catch (_) {}
 
     try {
       const di = await gattServer.getPrimaryService("device_information");
       const want = [["manufacturer_name_string", "Üretici"], ["model_number_string", "Model"],
-                    ["serial_number_string", "Seri no"], ["firmware_revision_string", "Yazılım"]];
+                    ["serial_number_string", "Seri"], ["firmware_revision_string", "Yazılım"]];
       const lines = [];
       for (const [u, l] of want) {
         try {
@@ -839,25 +684,21 @@ async function connectFlow(all) {
         }
       }
       $("cmdStatus").textContent =
-        "Komut kanalı 0x33F3 " + (txChar ? "hazır" : "bulunamadı") +
-        ", cevap kanalı 0x33F4 dinleniyor.";
+        "Komut kanalı 0x33F3 " + (txChar ? "hazır" : "bulunamadı") + ", cevap kanalı 0x33F4 dinleniyor.";
 
-      // sonucu acikca raporla
       if (txChar) {
         $("connText").textContent = "Bağlı";
-        setStatus("", "Bağlı — hazır", name + " bağlı, komut kanalı açıldı");
-        toast("Bağlandı: " + name + ". Komut kanalı hazır.");
+        setStatus("", "Bağlı — hazır", name + " bağlı, veriler canlı");
+        toast("Bağlandı: " + name);
       } else {
         $("connText").textContent = "Kanal yok";
         setStatus("warn", "Bağlandı ama komut kanalı yok",
-          "Bu cihaz bileklik olmayabilir. Bağlantıyı kesip M81b-105C'yi seçin.");
-        toast("Bağlanıldı ama 0x33F3 kanalı bulunamadı. Yanlış cihaz seçilmiş olabilir.");
+          "Yanlış cihaz seçilmiş olabilir. Bağlantıyı kesip M81b'yi seçin.");
       }
     } catch (_) {}
-
   } catch (err) {
     if (String(err.message).includes("cancelled")) {
-      toast("Seçim penceresi kapandı. Listeden M81b-105C'yi seçmen gerekiyor.");
+      toast("Seçim penceresi kapandı. Listeden M81b'yi seçin.");
     } else {
       toast("Bağlantı hatası: " + err.message);
     }
@@ -866,7 +707,6 @@ async function connectFlow(all) {
 
 $("btnConnect").addEventListener("click", () => connectFlow(false));
 $("btnConnectAll").addEventListener("click", () => connectFlow(true));
-
 $("btnDisconnect").addEventListener("click", () => {
   if (device && device.gatt.connected) device.gatt.disconnect();
   $("badgeConn").classList.remove("on");
@@ -874,76 +714,6 @@ $("btnDisconnect").addEventListener("click", () => {
   setStatus("", "Bileklik bağlı değil", "Canlı veriler için bilekliği bağlayın");
   addEvent("Bileklik bağlantısı kesildi", "info", "link");
 });
-
-/* ---------------- Gelen paketler ---------------- */
-function logPacket(src, hex) {
-  packetCount++;
-  const raw = $("rawlog");
-  if (packetCount === 1) raw.innerHTML = "";
-  const row = document.createElement("div");
-  row.className = "logrow";
-  row.innerHTML =
-    `<span>${new Date().toLocaleTimeString("tr-TR")}</span>` +
-    `<span class="hex">${hex || "(boş)"}</span>` +
-    `<span class="sos">${sosPattern === hex ? "eşleşti" : "SOS ata"}</span>`;
-  row.querySelector(".sos").addEventListener("click", (ev) => {
-    sosPattern = hex;
-    ev.target.textContent = "eşleşti";
-    addEvent("Acil alarm paketi eşlendi: " + hex, "info", "link");
-    toast("Eşlendi. Bu paket geldiğinde acil alarm çalışır.");
-  });
-  raw.prepend(row);
-  while (raw.children.length > 120) raw.removeChild(raw.lastChild);
-  if (sosPattern !== null && hex === sosPattern) triggerAlarm("Düşme algılandı", "Bileklik olayı");
-}
-
-function onPacket(hex) {
-  logPacket("rx", hex);
-  const b = hex.split(" ").map((x) => parseInt(x, 16));
-
-  // canlı veri göstergesi
-  const rx = $("rxLine");
-  rx.classList.add("live");
-  rx.textContent = "Gelen veri (" + new Date().toLocaleTimeString("tr-TR") + "): " + hex;
-
-  // --- sensör çerçevesi (APK çözümlendi):
-  // byte[1]=nabız, [2]=sistolik, [3]=diyastolik, [4]=SpO2, [5]=yorgunluk
-  if (b.length >= 6 && b[1] >= 30 && b[1] <= 200 && b[2] >= 60 && b[2] <= 220 &&
-      b[3] >= 30 && b[3] <= 150 && b[4] >= 70 && b[4] <= 100) {
-    pushHr(b[1]);
-    $("spo2Val").innerHTML = b[4] + "<small>%</small>";
-    $("spo2Val").classList.remove("dim");
-    $("bpVal").innerHTML = b[2] + "/" + b[3] + "<small>mmHg</small>";
-    $("bpVal").classList.remove("dim");
-    $("hrTime").innerHTML = '<span class="measuring-dot"></span>Canlı · ' + new Date().toLocaleTimeString("tr-TR");
-    return;
-  }
-
-  // --- periyodik ölçüm çerçevesi: byte[1..4]=zaman (LE), byte[5]=nabız
-  if (b.length >= 6 && measuring && b[5] >= 30 && b[5] <= 200) {
-    pushHr(b[5]);
-    if (b[6] >= 70 && b[6] <= 100) {
-      $("spo2Val").innerHTML = b[6] + "<small>%</small>";
-      $("spo2Val").classList.remove("dim");
-    }
-    $("hrTime").innerHTML = '<span class="measuring-dot"></span>Otomatik ölçüm · ' + new Date().toLocaleTimeString("tr-TR");
-    return;
-  }
-
-  // --- adım çerçevesi: byte[1..4] = adım sayısı (little-endian)
-  if (b[0] === 0x03 || b[0] === 0x83 || b[0] === 0x13) {
-    if (b.length >= 5) {
-      const steps = (b[1] | (b[2] << 8) | (b[3] << 16) | (b[4] << 24)) >>> 0;
-      if (steps > 0 && steps < 200000) {
-        $("stepsVal").innerHTML = steps.toLocaleString("tr-TR");
-        $("stepsVal").classList.remove("dim");
-        $("stepsMeta").textContent = "Son senkron " + new Date().toLocaleTimeString("tr-TR");
-        weekSteps[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] = steps;
-        drawWeekBars();
-      }
-    }
-  }
-}
 
 /* ---------------- Komutlar ---------------- */
 function buildFrame(cmd, ...rest) {
@@ -960,18 +730,16 @@ const PRESETS = {
   time:    () => buildFrame(0x01, ...le32(Math.floor(Date.now() / 1000) - new Date().getTimezoneOffset() * 60), 3),
   hrstart: () => buildFrame(0x14, 0, 0, 0, 0, 0),
   hrstop:  () => buildFrame(0x15, 0, 0, 0, 0, 0),
-  // setAutoHeartMode (0x19): 08:00-22:00 arasi, 30 dakikada bir olcum
   automeasure:    () => buildFrame(0x19, 8, 0, 22, 0, 1, 30, 1),
   automeasureoff: () => buildFrame(0x19, 8, 0, 22, 0, 0, 30, 1),
-  // senkron oturumu acilisi (APK: 0xA3 0x11 + buyuk-endian zaman damgasi)
   sync:    () => buildFrame(0xA3, 0x11, ...be32(Math.floor(Date.now() / 1000))),
   steps:   () => buildFrame(0x03),
   bat:     () => buildFrame(0x0B)
 };
 const PRESET_NAMES = {
   find: "Bilekliği bul", time: "Saat ayarı", hrstart: "Nabız ölçümü",
-  hrstop: "Nabız durdurma", automeasure: "Otomatik ölçüm aç",
-  automeasureoff: "Otomatik ölçüm kapat", steps: "Adım sorgusu", bat: "Pil sorgusu"
+  hrstop: "Nabız durdurma", automeasure: "Otomatik ölçüm",
+  automeasureoff: "Otomatik ölçüm kapalı", sync: "Senkron", steps: "Adım sorgusu", bat: "Pil sorgusu"
 };
 
 async function sendFrame(key) {
@@ -981,7 +749,7 @@ async function sendFrame(key) {
     return;
   }
   if (!txChar) {
-    toast("Bağlı görünüyorsun ama komut kanalı (0x33F3) yok. Yanlış cihaza bağlanmış olabilirsin.");
+    toast("Bağlı görünüyorsun ama komut kanalı yok. Yanlış cihaz seçilmiş olabilir.");
     return;
   }
   try {
@@ -999,47 +767,41 @@ document.querySelectorAll("[data-cmd]").forEach((b) =>
   b.addEventListener("click", () => sendFrame(b.dataset.cmd))
 );
 
-let measuring = false;
-
+/* ---------------- Ölçüm + sürekli takip ---------------- */
 $("btnMeasure").addEventListener("click", async () => {
-  // 1) senkron oturumunu ac (cihaz cevaplari bu oturumda gonderiyor olabilir)
   await sendFrame("sync");
-  // 2) olcumu baslat
   await sendFrame("hrstart");
   measuring = true;
   setEcg(true);
   $("hrTime").innerHTML = '<span class="measuring-dot"></span>Ölçülüyor';
   $("rxLine").textContent = "Ölçüm açık, cihazdan veri bekleniyor…";
   $("rxLine").classList.remove("live");
-  setStatus("warn", "Nabız ölçülüyor", "Bileklik ölçüm yapıyor, birkaç saniye sürebilir");
+  setStatus("warn", "Nabız ölçülüyor", "Birkaç saniye sürebilir");
   setTimeout(async () => {
     await sendFrame("hrstop");
     measuring = false;
     setEcg(false);
     if ($("hrTime").textContent.includes("Ölçülüyor")) {
       $("hrTime").textContent = "Cevap bekleniyor";
-      setStatus("", "Bağlantı kuruldu", "Veriler güncelleniyor");
+      setStatus("", "Bağlı", "Veriler güncelleniyor");
     }
   }, 15000);
 });
 
-/* Sürekli takip: 0x19 otomatik ölçüm + periyodik komut */
 let autoTimer = null;
 $("btnAuto").addEventListener("click", async () => {
   const btn = $("btnAuto");
   const on = !btn.classList.contains("on");
   btn.classList.toggle("on", on);
   if (on) {
-    // cihaza "08:00-22:00, 30 dakikada bir" otomatik olcum (protokol 0x19)
     await sendFrame("automeasure");
-    // emniyet olarak uygulama da periyodik olcum baslatir
     autoTimer = setInterval(async () => {
       await sendFrame("hrstart");
       setEcg(true);
       setTimeout(async () => { await sendFrame("hrstop"); setEcg(false); }, 12000);
     }, 120000);
     addEvent("Sürekli nabız takibi açıldı", "info", "heart");
-    toast("Sürekli takip açık. Bileklik gün boyu düzenli ölçer.");
+    toast("Sürekli takip açık.");
   } else {
     clearInterval(autoTimer);
     autoTimer = null;
@@ -1048,12 +810,6 @@ $("btnAuto").addEventListener("click", async () => {
     toast("Sürekli takip kapatıldı.");
   }
 });
-$("btnFind").addEventListener("click", () => sendFrame("find"));
-$("btnLocate").addEventListener("click", () => {
-  document.querySelector('[data-tab="konum"]').click();
-  updateLocation();
-});
-$("btnLocate2").addEventListener("click", updateLocation);
 
 /* ---------------- Alarm ---------------- */
 async function triggerAlarm(title, source) {
@@ -1063,34 +819,25 @@ async function triggerAlarm(title, source) {
   $("alarm").classList.add("show");
   addEvent(title + " (" + source + ")", "alarm", "alert");
   setStatus("danger", "Acil durum", title + ", müdahale gerekiyor");
-
-  // telefon titresin (destekleyen cihazlarda)
   if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 600]);
-
-  // bileklik de titresin (cihaz bagliysa)
   if (gattServer && gattServer.connected && txChar) {
     try { await sendFrame("find"); } catch (_) {}
   }
-
-  // tarayici bildirimi (uygulama arka plandayken de gorunur)
   if ("Notification" in window && Notification.permission === "granted") {
     new Notification("circle8 · " + title, {
       body: source + " · " + new Date().toLocaleTimeString("tr-TR"),
       icon: "icon-192.png"
     });
   }
-
-  // sesli anons (destekleyen cihazlarda)
   try {
     const u = new SpeechSynthesisUtterance(title + ". " + source);
     u.lang = "tr-TR";
-    u.rate = 1.0;
     speechSynthesis.speak(u);
   } catch (_) {}
-
   beep();
   alarmTimer = setInterval(beep, 500);
 }
+
 function beep() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   const o = audioCtx.createOscillator(), g = audioCtx.createGain();
@@ -1101,11 +848,19 @@ function beep() {
   o.start();
   o.stop(audioCtx.currentTime + 0.18);
 }
+
 $("btnSos").addEventListener("click", () => triggerAlarm("Yardım isteği", "Uygulama"));
 $("btnAlarmOff").addEventListener("click", () => {
   $("alarm").classList.remove("show");
   clearInterval(alarmTimer);
   setStatus("", "Alarm kapatıldı", "Kayıt olay geçmişine eklendi");
+  if (demoMode) {
+    demoMode = false;
+    document.querySelector('[data-tab="rapor"]').click();
+    setReport("72 bpm", "32.200", "6,8 sa", "1", 'Haftalık özet <span class="demo-tag">demo</span> verisiyle hazırlandı.');
+    updateWidget(null, "İyi", "düşme (çözüldü)");
+    toast("3/3 Haftalık rapor hazır.");
+  }
 });
 
 /* ---------------- Konum ---------------- */
@@ -1118,17 +873,19 @@ function initMap() {
 }
 function updateLocation() {
   if (!("geolocation" in navigator)) return;
+  const mapEl = $("map");
+  mapEl.style.display = "block";
+  if (!map) initMap();
   navigator.geolocation.getCurrentPosition((pos) => {
     const lat = pos.coords.latitude, lon = pos.coords.longitude, acc = Math.round(pos.coords.accuracy);
     const txt = lat.toFixed(5) + " / " + lon.toFixed(5) + " · doğruluk " + acc + " m";
-    $("geoText").textContent = txt + " · " + new Date().toLocaleTimeString("tr-TR");
     $("geoMini").textContent = txt;
-    $("addrText").textContent = "Son konum";
     $("addrMini").textContent = "Son konum";
     if (map) {
       if (marker) marker.setLatLng([lat, lon]);
       else marker = L.marker([lat, lon]).addTo(map);
       map.setView([lat, lon], 16);
+      setTimeout(() => map.invalidateSize(), 120);
     }
   });
 }
@@ -1136,9 +893,7 @@ if ("geolocation" in navigator) {
   initMap();
   navigator.geolocation.watchPosition((pos) => {
     const lat = pos.coords.latitude, lon = pos.coords.longitude, acc = Math.round(pos.coords.accuracy);
-    const txt = lat.toFixed(5) + " / " + lon.toFixed(5) + " · doğruluk " + acc + " m";
-    $("geoText").textContent = txt;
-    $("geoMini").textContent = txt;
+    $("geoMini").textContent = lat.toFixed(5) + " / " + lon.toFixed(5) + " · doğruluk " + acc + " m";
     $("addrMini").textContent = "Son konum";
     if (map) {
       if (marker) marker.setLatLng([lat, lon]);
@@ -1146,92 +901,17 @@ if ("geolocation" in navigator) {
     }
   });
 }
+$("btnLocate").addEventListener("click", updateLocation);
+$("btnFind").addEventListener("click", () => sendFrame("find"));
 
-/* ---------------- Profil ---------------- */
-$("patientName").addEventListener("click", () => {
-  const n = prompt("İzlenen kişinin adı:", $("patientName").textContent.trim());
-  if (n && n.trim()) {
-    $("patientName").textContent = n.trim();
-    $("avatar").textContent = n.trim()[0].toUpperCase();
-    localStorage.setItem("dostum_name", n.trim());
-  }
-});
-const savedName = localStorage.getItem("dostum_name");
-if (savedName) {
-  $("patientName").textContent = savedName;
-  $("avatar").textContent = savedName[0].toUpperCase();
-}
-
-/* ---------------- Grafikler ---------------- */
-const hrSeries = [];        // son 24 saat (doluysa cizilir)
-const weekSteps = [0, 0, 0, 0, 0, 0, 0];
-const DAYS_TR = ["Pt", "Sa", "Ça", "Pe", "Cu", "Ct", "Pa"];
-
-function drawHrChart() {
-  const c = $("hrChart");
-  const w = (c.width = c.clientWidth * devicePixelRatio);
-  const h = (c.height = 70 * devicePixelRatio);
-  const ctx = c.getContext("2d");
-  ctx.clearRect(0, 0, w, h);
-  if (hrSeries.length < 2) {
-    ctx.strokeStyle = "#d4d8da";
-    ctx.lineWidth = 2 * devicePixelRatio;
-    ctx.setLineDash([4 * devicePixelRatio, 5 * devicePixelRatio]);
-    ctx.beginPath();
-    ctx.moveTo(0, h / 2);
-    ctx.lineTo(w, h / 2);
-    ctx.stroke();
-    return;
-  }
-  const min = Math.min(...hrSeries) - 5, max = Math.max(...hrSeries) + 5;
-  ctx.strokeStyle = "#1c6f66";
-  ctx.lineWidth = 2.2 * devicePixelRatio;
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  hrSeries.forEach((v, i) => {
-    const x = (i / (hrSeries.length - 1)) * w;
-    const y = h - ((v - min) / (max - min)) * h;
-    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
-  ctx.stroke();
-}
-
-function drawWeekBars() {
-  const el = $("weekBars");
-  el.innerHTML = "";
-  const max = Math.max(...weekSteps, 1);
-  weekSteps.forEach((v, i) => {
-    const wrap = document.createElement("div");
-    wrap.className = "bwrap";
-    const b = document.createElement("div");
-    b.className = "b" + (v ? "" : " empty");
-    b.style.height = v ? Math.max(8, (v / max) * 100) + "%" : "6%";
-    const d = document.createElement("div");
-    d.className = "bd";
-    d.textContent = DAYS_TR[i];
-    wrap.append(b, d);
-    el.appendChild(wrap);
-  });
-}
-window.addEventListener("resize", drawHrChart);
-drawHrChart();
-drawWeekBars();
-
-function setWeekData(arr, label) {
-  arr.forEach((v, i) => (weekSteps[i] = v));
-  drawWeekBars();
-  if (label) $("chartNote").innerHTML = label;
-}
-
-/* ---------------- Haftalık rapor ---------------- */
+/* ---------------- Rapor ---------------- */
 function setReport(hr, steps, sleep, events, note) {
   $("repHr").textContent = hr;
   $("repSteps").textContent = steps;
   $("repSleep").textContent = sleep;
   $("repEvents").textContent = events;
-  if (note) $("repNote").innerHTML = note;
+  if (note) toast("Rapor güncellendi");
 }
-
 $("btnShare").addEventListener("click", async () => {
   const text =
     "circle8 haftalık rapor — " + $("patientName").textContent.trim() + "\n" +
@@ -1245,7 +925,7 @@ $("btnShare").addEventListener("click", async () => {
   window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
 });
 
-/* ---------------- İlaç hatırlatma ---------------- */
+/* ---------------- İlaçlar ---------------- */
 let meds = JSON.parse(localStorage.getItem("circle8_meds") || "null") || [
   { name: "Tansiyon ilacı", dose: "1 tablet", time: "09:00", on: true },
   { name: "D vitamini", dose: "1 damla", time: "21:00", on: true }
@@ -1255,10 +935,10 @@ function renderMeds() {
   el.innerHTML = "";
   meds.forEach((m, i) => {
     const row = document.createElement("div");
-    row.className = "med-row";
+    row.className = "row";
     row.innerHTML =
       `<div class="ic" data-ic="info"></div><div><div class="lbl">${m.name}</div>` +
-      `<div class="meta">${m.dose}${m.on ? "" : " · kapalı"}</div></div><div class="time">${m.time}</div>`;
+      `<div class="meta">${m.dose}${m.on ? "" : " · kapalı"}</div></div><div class="right">${m.time}</div>`;
     row.addEventListener("click", () => {
       meds[i].on = !meds[i].on;
       localStorage.setItem("circle8_meds", JSON.stringify(meds));
@@ -1275,11 +955,10 @@ $("btnAddMed").addEventListener("click", () => {
   meds.push({ name: name.trim(), dose: "1 doz", time: time.trim(), on: true });
   localStorage.setItem("circle8_meds", JSON.stringify(meds));
   renderMeds();
-  addEvent("İlaç hatırlatma eklendi: " + name.trim(), "info", "info");
 });
 renderMeds();
 
-/* ---------------- Bakıcı ekibi ---------------- */
+/* ---------------- Bakıcılar ---------------- */
 let cares = JSON.parse(localStorage.getItem("circle8_cares") || "null") || [
   { name: "Ayşe (kızı)", phone: "+905000000000" },
   { name: "Dr. Mehmet", phone: "+905000000001" }
@@ -1289,14 +968,14 @@ function renderCares() {
   el.innerHTML = "";
   cares.forEach((c) => {
     const row = document.createElement("div");
-    row.className = "care-row";
+    row.className = "row";
     row.innerHTML =
       `<div class="ic" data-ic="phone"></div><div><div class="lbl">${c.name}</div>` +
       `<div class="meta">Olay bildirimi alır</div></div>`;
     const a = document.createElement("a");
     a.className = "btn";
     a.href = "tel:" + c.phone;
-    a.style.cssText = "margin-left:auto;padding:9px 14px;text-decoration:none";
+    a.style.cssText = "margin-left:auto;padding:8px 14px";
     a.textContent = "Ara";
     row.appendChild(a);
     el.appendChild(row);
@@ -1306,22 +985,21 @@ function renderCares() {
 $("btnAddCare").addEventListener("click", () => {
   const name = prompt("Kişi adı:");
   if (!name) return;
-  const phone = prompt("Telefon (0 ile):", "05") || "05";
+  const phone = prompt("Telefon:", "05") || "05";
   cares.push({ name: name.trim(), phone: phone.trim() });
   localStorage.setItem("circle8_cares", JSON.stringify(cares));
   renderCares();
-  addEvent("Bakıcı ekibi güncellendi: " + name.trim(), "info", "phone");
 });
 renderCares();
 
-/* ---------------- Widget güncelleme ---------------- */
+/* ---------------- Widget ---------------- */
 function updateWidget(hr, status, lastEvent) {
   if (hr != null) $("widgetHr").textContent = hr;
   if (status) $("widgetStatus").textContent = status;
   if (lastEvent) $("widgetEvent").textContent = lastEvent;
 }
 
-/* ---------------- Rehberli sahne demosu ---------------- */
+/* ---------------- Sahne demosu ---------------- */
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let demoMode = false;
 
@@ -1335,26 +1013,28 @@ $("btnDemo").addEventListener("click", async () => {
     await sleep(600);
   }
   setEcg(false);
-  hrSeries.push(...[70, 72, 74, 71, 73, 76, 72, 70, 71, 74]);
-  drawHrChart();
-  setWeekData([4200, 5100, 3800, 6200, 5400, 2900, 4600],
-    'Grafikler <span class="demo-tag">demo</span> verisiyle dolu (sahne sunumu için)');
   updateWidget(null, "İyi", "yok");
   toast("2/3 Olay: düşme senaryosu");
   await sleep(1000);
   triggerAlarm("Düşme algılandı", "demo (senaryo)");
 });
 
-// alarm kapatilinca demo 3. adima gecsin
-$("btnAlarmOff").addEventListener("click", () => {
-  if (!demoMode) return;
-  demoMode = false;
-  document.querySelector('[data-tab="rapor"]').click();
-  setReport("72 bpm", "32.200", "6,8 sa", "1",
-    'Haftalık özet <span class="demo-tag">demo</span> verisiyle hazırlandı.');
-  updateWidget(72, "İyi", "düşme (çözüldü)");
-  toast("3/3 Haftalık rapor hazır. Paylaş düğmesiyle WhatsApp'tan gönderilebilir.");
+/* ---------------- Profil ---------------- */
+$("patientName").addEventListener("click", () => {
+  const n = prompt("İzlenen kişinin adı:", $("patientName").textContent.trim());
+  if (n && n.trim()) {
+    $("patientName").textContent = n.trim();
+    $("avatar").textContent = n.trim()[0].toUpperCase();
+    $("widgetName").textContent = n.trim();
+    localStorage.setItem("dostum_name", n.trim());
+  }
 });
+const savedName = localStorage.getItem("dostum_name");
+if (savedName) {
+  $("patientName").textContent = savedName;
+  $("avatar").textContent = savedName[0].toUpperCase();
+  $("widgetName").textContent = savedName;
+}
 
 /* ---------------- PWA ---------------- */
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
