@@ -604,8 +604,19 @@ for (const def of labelDefs) {
   if (def.alarm) el.querySelector('b').style.color = 'var(--coral)';
   if (def.down) el.classList.add('down');
   labelRoot.appendChild(el);
-  labels.push({ def, el, anchor: new THREE.Vector3(...def.anchor) });
+  labels.push({ def, el, anchor: new THREE.Vector3(...def.anchor), baseLen: len, w: 130, h: 34, placedLen: -1 });
 }
+// yazı kutularını bir kez ölç (çakışma çözümü için); font yüklenince tekrarla
+function measureLabels() {
+  for (const L of labels) {
+    const t = L.el.querySelector('.txt');
+    L.w = Math.ceil(t.offsetWidth) || 130;
+    L.h = Math.ceil(t.offsetHeight) || 34;
+  }
+}
+measureLabels();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureLabels);
+addEventListener('resize', measureLabels);
 
 /* ---------------- bağlantı çizgileri (Bölüm 4) ---------------- */
 const connGroup = new THREE.Group();
@@ -706,6 +717,15 @@ function applyFrame() {
 function updateLabels(progress) {
   const w = innerWidth, h = innerHeight;
   const v = new THREE.Vector3();
+  // yerleşen kutular: birbirine ve görünür bölüm metinlerine binmesin
+  const blocked = [];
+  for (const scr of document.querySelectorAll('.scr')) {
+    if (parseFloat(getComputedStyle(scr).opacity) < 0.4) continue;
+    const r = scr.querySelector('.inner').getBoundingClientRect();
+    if (r.width > 0) blocked.push([r.left - 10, r.top - 10, r.width + 20, r.height + 20]);
+  }
+  const hit = (a, b) => a[0] < b[0] + b[2] && a[0] + a[2] > b[0] && a[1] < b[1] + b[3] && a[1] + a[3] > b[1];
+
   for (const L of labels) {
     const { def, el } = L;
     let vis = 0;
@@ -715,13 +735,42 @@ function updateLabels(progress) {
       if (progress < def.in + fade) vis = (progress - def.in) / fade;
       if (progress > def.out - fade) vis = (def.out - progress) / fade;
     }
-    if (vis <= 0) { el.style.opacity = 0; continue; }
+    if (vis <= 0) { el.style.opacity = 0; L.placedLen = -1; continue; }
     v.copy(L.anchor).applyMatrix4(parts[def.id].group.matrixWorld).project(camera);
-    if (v.z > 1) { el.style.opacity = 0; continue; }
+    if (v.z > 1) { el.style.opacity = 0; L.placedLen = -1; continue; }
     const x = (v.x * 0.5 + 0.5) * w, y = (-v.y * 0.5 + 0.5) * h;
+    const flip = x > w * 0.62;
+    el.classList.toggle('flip', flip);
+
+    // kılavuz çizgiyi uzatarak çakışmayan yer ara; önce kendi yönü, olmazsa tersi; hiç sığmazsa gizle
+    let spot = null;
+    for (const dir of (def.down ? [1, -1] : [-1, 1])) {
+      for (const mult of [1, 1.45, 1.9, 2.4, 3, 3.6]) {
+        const len = Math.round(L.baseLen * mult);
+        const lx = len * 0.79, ly = len * 0.62 * dir;
+        const rect = flip
+          ? [x - lx - L.w, y + ly - 6, L.w, L.h + 12]
+          : [x + lx, y + ly - 6, L.w, L.h + 12];
+        if (rect[0] < 10 || rect[0] + rect[2] > w - 10 || rect[1] < 10 || rect[1] + rect[3] > h - 10) continue;
+        if (blocked.some(b => hit(rect, b))) continue;
+        spot = { len, lx, ly, rect, dir };
+        break;
+      }
+      if (spot) break;
+    }
+    if (!spot) { el.style.opacity = 0; L.placedLen = -1; continue; }
+    blocked.push(spot.rect);
+    el.classList.toggle('down', spot.dir > 0);
+
+    if (L.placedLen !== spot.len || L.placedDir !== spot.dir) {
+      L.placedLen = spot.len;
+      L.placedDir = spot.dir;
+      el.style.setProperty('--len', spot.len + 'px');
+      el.style.setProperty('--lx', spot.lx.toFixed(0) + 'px');
+      el.style.setProperty('--ly', (-spot.len * 0.62).toFixed(0) + 'px');   // yönü .down sınıfı çevirir
+    }
     el.style.opacity = vis;
     el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
-    el.classList.toggle('flip', x > w * 0.62);
   }
 }
 
