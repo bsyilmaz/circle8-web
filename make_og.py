@@ -45,7 +45,7 @@ d.text((95, offer_y + 17), "First 2,000 signups get a launch discount", font=fon
 
 # urun render'i (sag taraf)
 try:
-    prod = Image.open("product.png").convert("RGBA")
+    prod = Image.open("product.jpg").convert("RGBA")
     target_h = 520
     scale = target_h / prod.height
     prod = prod.resize((int(prod.width * scale), target_h), Image.LANCZOS)
