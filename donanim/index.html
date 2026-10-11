@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>circle8 — Donanım</title>
+<meta name="description" content="circle8 bileklik donanımı: kaydırmayla dönen 3D model, katman katman açılan görünüm ve iç yerleşim şeması.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#070F0E; --text:#EEF3F1; --muted:#9AB0AB; --mint:#BFE5D9; --teal:#2E9483; --coral:#F08A6E;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:auto; }
+  body{
+    background:var(--bg); color:var(--text); font-family:'Outfit',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  /* yumuşak radyal teal glow (ürünün arkası) */
+  #glow{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(46% 42% at 50% 52%, rgba(46,148,131,.22), rgba(46,148,131,.05) 55%, transparent 72%),
+      radial-gradient(80% 70% at 50% 45%, rgba(11,26,24,.9), transparent 100%),
+      var(--bg);
+  }
+  #scene{ position:fixed; inset:0; z-index:1; width:100vw; height:100vh; display:block; }
+
+  /* ---------- etiketler (3D -> ekran projeksiyonu) ---------- */
+  #labels{ position:fixed; inset:0; z-index:3; pointer-events:none; }
+  .lbl{ position:absolute; left:0; top:0; opacity:0; will-change:transform,opacity; }
+  .lbl .dot{
+    position:absolute; width:5px; height:5px; border-radius:50%;
+    background:var(--mint); transform:translate(-2.5px,-2.5px);
+    box-shadow:0 0 10px rgba(191,229,217,.9);
+  }
+  .lbl .line{
+    position:absolute; width:var(--len,26px); height:1px; background:rgba(191,229,217,.5);
+    transform-origin:0 50%; transform:rotate(-38deg);
+  }
+  .lbl .txt{ position:absolute; white-space:nowrap; transform:translate(var(--lx,20px),var(--ly,-16px)); }
+  .lbl .txt b{ display:block; font-size:13px; font-weight:600; letter-spacing:.01em; color:var(--text); }
+  .lbl .txt i{ display:block; font-size:11px; font-weight:400; font-style:normal; color:var(--muted); margin-top:1px; }
+  .lbl.flip .line{ transform:rotate(-142deg); }
+  .lbl.flip .txt{ transform:translate(calc(-100% - var(--lx,20px)),var(--ly,-16px)); text-align:right; }
+  .lbl.down .line{ transform:rotate(38deg); }
+  .lbl.down .txt{ transform:translate(var(--lx,20px),calc(var(--ly,-16px) * -1)); }
+  .lbl.down.flip .line{ transform:rotate(142deg); }
+  .lbl.down.flip .txt{ transform:translate(calc(-100% - var(--lx,20px)),calc(var(--ly,-16px) * -1)); }
+
+  /* ---------- sabit arayüz katmanı ---------- */
+  #ui{ position:fixed; inset:0; z-index:4; pointer-events:none; }
+  .scr{ position:absolute; inset:0; opacity:0; visibility:hidden; }
+  .scr .inner{ position:absolute; }
+
+  #brand{
+    position:fixed; top:26px; left:32px; z-index:6; font-size:15px; font-weight:600;
+    letter-spacing:.16em; text-transform:lowercase; color:var(--text); opacity:.9;
+  }
+  #brand .ring{ display:inline-block; width:9px; height:9px; border:1.5px solid var(--mint); border-radius:50%; margin-right:9px; vertical-align:1px; }
+
+  /* hero */
+  #s0{ opacity:1; visibility:visible; }
+  #s0 .inner{ left:0; right:0; top:11vh; text-align:center; }
+  #s0 h1{ font-size:clamp(44px,8vw,92px); font-weight:600; letter-spacing:-.02em; }
+  #s0 h1 span{ color:var(--mint); }
+  #s0 p{ margin-top:14px; font-size:clamp(15px,2.1vw,21px); font-weight:400; color:var(--muted); }
+
+  /* alt sol tek satırlar */
+  .bottomLeft{ left:32px; bottom:9vh; max-width:min(520px,72vw); }
+  .bottomLeft h2{ font-size:clamp(22px,3.4vw,38px); font-weight:600; letter-spacing:-.01em; line-height:1.22; }
+  .bottomLeft p{ margin-top:10px; font-size:clamp(13px,1.7vw,17px); color:var(--muted); }
+
+  /* sol üst başlık (exploded) */
+  .topLeft{ left:32px; top:14vh; max-width:min(420px,72vw); }
+  .topLeft h2{ font-size:clamp(21px,3vw,34px); font-weight:600; letter-spacing:-.01em; }
+  .topLeft p{ margin-top:9px; font-size:clamp(12px,1.6vw,15px); color:var(--muted); line-height:1.5; }
+
+  /* akış paneli (sağ) */
+  #s4 .inner{ right:32px; top:50%; transform:translateY(-50%); width:min(300px,74vw); }
+  #s4 h2{ font-size:clamp(19px,2.4vw,26px); font-weight:600; margin-bottom:22px; }
+  .flow{ list-style:none; }
+  .flow li{
+    position:relative; padding:0 0 26px 26px; font-size:14px; color:var(--text); line-height:1.45;
+  }
+  .flow li span{ display:block; font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .flow li::before{
+    content:""; position:absolute; left:3px; top:6px; width:7px; height:7px; border-radius:50%;
+    background:var(--mint); box-shadow:0 0 12px rgba(191,229,217,.7);
+  }
+  .flow li::after{
+    content:""; position:absolute; left:6px; top:15px; bottom:2px; width:1px;
+    background:linear-gradient(rgba(191,229,217,.5), rgba(191,229,217,.08));
+  }
+  .flow li:last-child{ padding-bottom:0; }
+  .flow li:last-child::after{ display:none; }
+
+  /* özet kartları */
+  #s6 .inner{ right:32px; top:50%; transform:translateY(-50%); width:min(430px,80vw); }
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .card{
+    border:1px solid rgba(154,176,171,.18); border-radius:14px; padding:18px 18px 15px;
+    background:rgba(13,26,24,.55); backdrop-filter:blur(8px);
+  }
+  .card b{ display:block; font-size:clamp(22px,3.2vw,31px); font-weight:600; letter-spacing:-.01em; }
+  .card i{ display:block; font-style:normal; font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.45; }
+  .card em{ font-style:normal; color:var(--mint); }
+  #s6 .note{
+    margin-top:18px; font-size:11px; line-height:1.6; color:var(--muted);
+    border-left:1px solid rgba(154,176,171,.3); padding-left:12px;
+  }
+
+  /* ipucu */
+  #hint{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:6;
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--muted);
+    transition:opacity .5s ease;
+  }
+  #hint .arrow{ display:block; text-align:center; font-size:15px; margin-top:6px; animation:bob 1.8s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(6px);} }
+
+  /* yükleyici */
+  #loader{
+    position:fixed; inset:0; z-index:20; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  }
+  #loader .name{ font-size:16px; letter-spacing:.34em; text-transform:lowercase; color:var(--text); }
+  #loader .bar{ width:120px; height:1px; background:rgba(154,176,171,.25); overflow:hidden; }
+  #loader .bar i{ display:block; width:40%; height:100%; background:var(--mint); animation:slide 1.1s ease-in-out infinite; }
+  @keyframes slide{ 0%{ transform:translateX(-100%);} 100%{ transform:translateX(320%);} }
+
+  /* ---------- mobil ---------- */
+  @media (max-width:760px){
+    #brand{ top:18px; left:18px; font-size:13px; }
+    .bottomLeft{ left:18px; bottom:8vh; max-width:82vw; }
+    .topLeft{ left:18px; top:12vh; max-width:82vw; }
+    #s4 .inner{ right:18px; width:min(260px,70vw); }
+    #s6 .inner{ right:auto; left:18px; width:calc(100vw - 36px); top:auto; bottom:7vh; transform:none; }
+    .cards{ gap:10px; }
+    .card{ padding:13px 13px 11px; }
+    .lbl .txt b{ font-size:11.5px; }
+    .lbl .txt i{ font-size:10px; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    #hint .arrow{ animation:none; }
+    #loader .bar i{ animation:none; width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<div id="glow"></div>
+<canvas id="scene"></canvas>
+<div id="labels"></div>
+
+<div id="brand"><span class="ring"></span>circle8</div>
+
+<div id="ui">
+  <!-- Bölüm 0: hero -->
+  <section class="scr" id="s0"><div class="inner">
+    <h1>circle<span>8</span></h1>
+    <p>Nabzı, oksijeni ve düşmeyi izler. Ailene haber verir.</p>
+  </div></section>
+
+  <!-- Bölüm 1 -->
+  <section class="scr" id="s1"><div class="inner bottomLeft">
+    <h2>Ekransız. Telefonsuz.<br>Kendi SIM'iyle.</h2>
+  </div></section>
+
+  <!-- Bölüm 2 -->
+  <section class="scr" id="s2"><div class="inner bottomLeft">
+    <h2>Nabız ve oksijen eğilimi,<br>bileğin altından.</h2>
+  </div></section>
+
+  <!-- Bölüm 3 -->
+  <section class="scr" id="s3"><div class="inner topLeft">
+    <h2>Katman katman</h2>
+    <p>Her parçanın adı ve görevi. Gövde gerçek CAD modeli; iç yerleşim tasarım ölçülerine göre şemadır.</p>
+  </div></section>
+
+  <!-- Bölüm 4 -->
+  <section class="scr" id="s4"><div class="inner">
+    <h2>Verinin yolu</h2>
+    <ul class="flow">
+      <li>Algılar<span>Sensör kartı: nabız ve oksijen eğilimi, hareket</span></li>
+      <li>Sorar<span>Titreşimle doğrulama — 30 saniye</span></li>
+      <li>Haber verir<span>LTE-M ile kendi hattından</span></li>
+      <li>8 kişilik çember<span>Aile ve bakıcılar bir arada</span></li>
+    </ul>
+  </div></section>
+
+  <!-- Bölüm 5 -->
+  <section class="scr" id="s5"><div class="inner bottomLeft">
+    <h2>Tekrar bir arada.</h2>
+    <p>Gövde kapanır, bilekliğe döner.</p>
+  </div></section>
+
+  <!-- Bölüm 6 -->
+  <section class="scr" id="s6"><div class="inner">
+    <div class="cards">
+      <div class="card"><b>36×24 <em>mm</em></b><i>pod ölçüleri — kavisli bant tipi</i></div>
+      <div class="card"><b>3–5 <em>gün</em></b><i>pil ömrü (tasarım hedefi)</i></div>
+      <div class="card"><b>LTE-M <em>+ GPS</em></b><i>kendi SIM'i, telefona gerek yok</i></div>
+      <div class="card"><b>IP <em>sınıfı</em></b><i>su geçirmezlik hedefi</i></div>
+    </div>
+    <p class="note">Gövde, buton, optik pencere ve membran: kendi 3D CAD modelimizden üretilmiş gerçek parçalar.
+      İç kartlar ve çipler: tasarım ölçülerine göre temsili yerleşim şeması; kart yerleşimi devam ediyor.</p>
+  </div></section>
+</div>
+
+<div id="hint">kaydır<span class="arrow">↓</span></div>
+
+<div id="loader"><div class="name">circle8</div><div class="bar"><i></i></div></div>
+
+<div id="scroll-space" style="height:700vh"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
+
+/* =====================================================================
+   circle8 — donanım sunumu (tek dosya, build yok)
+   Birim: mm.  3D modeller govde/ CAD'inden (STL, Z-up) yüklenir;
+   -90° X rotasyonu ile Y-up'a çevrilir.
+   ===================================================================== */
+
+const isMobile = matchMedia('(max-width:760px)').matches || 'ontouchstart' in window;
+const canvas = document.getElementById('scene');
+
+/* ---------------- renderer ---------------- */
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.25 : 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.8;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = !isMobile;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 1, 800);
+camera.position.set(60, 30, 110);
+
+/* ---------------- ışık / ortam ---------------- */
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer)).texture;
+
+const key = new THREE.DirectionalLight(0xffffff, 1.5);
+key.position.set(48, 82, 62);
+if (!isMobile) {
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.near = 20; key.shadow.camera.far = 320;
+  key.shadow.camera.left = -70; key.shadow.camera.right = 70;
+  key.shadow.camera.top = 70; key.shadow.camera.bottom = -70;
+  key.shadow.bias = -0.0009;
+  key.shadow.radius = 4;
+}
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(0x2e9483, 1.35);   // teal kenar ışığı
+rim.position.set(-70, 26, -64);
+scene.add(rim);
+
+const fill = new THREE.DirectionalLight(0xbfe5d9, 0.32);
+fill.position.set(-30, -50, 40);
+scene.add(fill);
+
+/* ---------------- malzemeler ---------------- */
+const M = {
+  ust: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.05, clearcoat: 0.25, clearcoatRoughness: 0.45 }),
+  alt: new THREE.MeshPhysicalMaterial({ color: 0x2B3B39, roughness: 0.55, metalness: 0.1 }),
+  buton: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.08, clearcoat: 0.25 }),
+  cam: new THREE.MeshPhysicalMaterial({
+    color: 0x0B1614, roughness: 0.1, metalness: 0, transmission: 0.55, thickness: 1.4,
+    ior: 1.5, transparent: true, opacity: 1
+  }),
+  membran: new THREE.MeshPhysicalMaterial({ color: 0xE9EEEB, roughness: 0.85, transparent: true, opacity: 0.8, side: THREE.DoubleSide }),
+  strap: new THREE.MeshPhysicalMaterial({
+    color: 0x1D5C53, roughness: 0.6, metalness: 0.02, sheen: 0.5, sheenRoughness: 0.65,
+    sheenColor: new THREE.Color(0x2E9483), side: THREE.DoubleSide
+  }),
+  pcbSensor: new THREE.MeshStandardMaterial({ color: 0x14624A, roughness: 0.55, metalness: 0.12 }),
+  pcbMain: new THREE.MeshStandardMaterial({ color: 0x11463A, roughness: 0.55, metalness: 0.12 }),
+  chip: new THREE.MeshStandardMaterial({ color: 0x14181C, roughness: 0.42, metalness: 0.22 }),
+  chipTop: new THREE.MeshStandardMaterial({ color: 0x1B2126, roughness: 0.36, metalness: 0.28 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0xA8B4B0, roughness: 0.28, metalness: 0.9 }),
+  battery: new THREE.MeshStandardMaterial({ color: 0xC9CFD2, roughness: 0.32, metalness: 0.85 }),
+  gold: new THREE.MeshStandardMaterial({ color: 0xD8B25A, roughness: 0.25, metalness: 0.95 }),
+  fpc: new THREE.MeshStandardMaterial({ color: 0xC9822B, roughness: 0.5, metalness: 0.12, side: THREE.DoubleSide }),
+  lra: new THREE.MeshStandardMaterial({ color: 0x3A4248, roughness: 0.4, metalness: 0.7 }),
+  ledMint: new THREE.MeshStandardMaterial({ color: 0xBFE5D9, emissive: 0xBFE5D9, emissiveIntensity: 0, roughness: 0.3 }),
+  ledGreen: new THREE.MeshStandardMaterial({ color: 0x2FBF71, emissive: 0x2AFF88, emissiveIntensity: 0, roughness: 0.3 }),
+  ledRed: new THREE.MeshStandardMaterial({ color: 0xD63B2E, emissive: 0xFF3B26, emissiveIntensity: 0, roughness: 0.3 }),
+  ledIr: new THREE.MeshStandardMaterial({ color: 0x52120C, emissive: 0xC4240F, emissiveIntensity: 0, roughness: 0.3 }),
+  pd: new THREE.MeshStandardMaterial({ color: 0x1B2A38, roughness: 0.25, metalness: 0.4 })
+};
+
+/* ---------------- yardımcılar ---------------- */
+const loader = new STLLoader();
+
+// STL (Z-up, mm) -> Y-up, yumuşatılmış geometri. Hata olursa sessizce null.
+function loadSTL(url) {
+  return loader.loadAsync(url).then(raw => {
+    raw.rotateX(-Math.PI / 2);                       // Z-up -> Y-up
+    const merged = BufferGeometryUtils.mergeVertices(raw, 0.05);
+    merged.computeVertexNormals();
+    raw.dispose();
+    return merged;
+  }).catch(() => null);
+}
+
+function box(w, h, d, x, y, z, mat) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function cyl(rt, rb, h, x, y, z, mat, seg = 24) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat);
+  m.position.set(x, y, z);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
+// Dikdörtgen kesitli süpürme (kayış ve FPC için)
+function sweepRect(path, width, thick) {
+  const n = path.length, pos = [], idx = [];
+  const W2 = width / 2, T2 = thick / 2;
+  for (let i = 0; i < n; i++) {
+    const p = path[i];
+    const prev = path[(i - 1 + n) % n], next = path[(i + 1) % n];
+    const tan = next.clone().sub(prev).normalize();
+    const nrm = new THREE.Vector3(-tan.y, tan.x, 0).normalize();
+    const zAxis = new THREE.Vector3(0, 0, 1);
+    const c = [
+      p.clone().addScaledVector(nrm, T2).addScaledVector(zAxis, -W2),
+      p.clone().addScaledVector(nrm, T2).addScaledVector(zAxis, W2),
+      p.clone().addScaledVector(nrm, -T2).addScaledVector(zAxis, W2),
+      p.clone().addScaledVector(nrm, -T2).addScaledVector(zAxis, -W2)
+    ];
+    for (const v of c) pos.push(v.x, v.y, v.z);
+  }
+  for (let i = 0; i < n; i++) {
+    const a = i * 4, b = ((i + 1) % n) * 4;
+    for (let j = 0; j < 4; j++) {
+      const k = (j + 1) % 4;
+      idx.push(a + j, b + j, b + k, a + j, b + k, a + k);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+function glowTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const ctx = c.getContext('2d');
+  const grd = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grd.addColorStop(0, 'rgba(191,229,217,0.85)');
+  grd.addColorStop(0.35, 'rgba(120,200,185,0.28)');
+  grd.addColorStop(1, 'rgba(120,200,185,0)');
+  ctx.fillStyle = grd; ctx.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+const GLOW_TEX = glowTexture();
+
+/* ---------------- ürün grubu ---------------- */
+const product = new THREE.Group();
+scene.add(product);
+
+// Parça kaydı: group = kaydırma ile hareket eden grup (pozisyon = ofset)
+const parts = {};
+
+function part(id, dy, dz = 0) {
+  const g = new THREE.Group();
+  product.add(g);
+  parts[id] = { id, group: g, base: new THREE.Vector3(0, 0, 0), dy, dz, k: 0 };
+  return g;
+}
+/* ---------------- iç yerleşim şeması (temsili kutular) ----------------
+   Gövde iç boşluğu (x=0): y ≈ 1.2 … 9.4  -> tüm yığın buraya sığar.
+   Sıra (aşağıdan yukarıya): optik pencere, sensör kartı, FPC, pil, ana kart.  */
+
+function buildInternals() {
+  /* --- sensör kartı --- */
+  const gSensor = part('sensor', -10);
+  gSensor.add(box(16, 0.8, 14, 0, 1.45, 0, M.pcbSensor));                 // 16×14×0.8
+  gSensor.add(box(2.6, 0.75, 2.6, -2.2, 2.225, -1.2, M.chip));            // MAX86141
+  gSensor.add(box(2.2, 0.75, 2.2, 2.2, 2.225, -1.2, M.chipTop));          // MAX32664C
+
+  // kartın ALTINDA: 4 LED (2 yeşil, kırmızı, kızılötesi) + 2 fotodiyot
+  const ledGreen1 = cyl(0.85, 0.85, 0.22, -3.4, 0.95, 1.7, M.ledGreen);
+  const ledGreen2 = cyl(0.85, 0.85, 0.22, -3.4, 0.95, -1.7, M.ledGreen);
+  const ledRed = cyl(0.85, 0.85, 0.22, 3.4, 0.95, 1.7, M.ledRed);
+  const ledIr = cyl(0.85, 0.85, 0.22, 3.4, 0.95, -1.7, M.ledIr);
+  gSensor.add(ledGreen1, ledGreen2, ledRed, ledIr,
+    cyl(0.7, 0.7, 0.22, 0, 0.95, 2.9, M.pd),
+    cyl(0.7, 0.7, 0.22, 0, 0.95, -2.9, M.pd));
+  parts.sensor.leds = [ledGreen1, ledGreen2, ledRed, ledIr];
+
+  /* --- FPC: sensör kartını ana karta bağlayan kavisli şerit --- */
+  const gFpc = part('fpc', -4);
+  const fpcPath = [
+    new THREE.Vector3(-8.2, 1.7, 0), new THREE.Vector3(-10.5, 2.15, 0),
+    new THREE.Vector3(-11.8, 3.2, 0), new THREE.Vector3(-12.1, 4.6, 0),
+    new THREE.Vector3(-11.7, 5.9, 0), new THREE.Vector3(-11.0, 6.7, 0)
+  ];
+  const fpc = new THREE.Mesh(sweepRect(fpcPath, 9, 0.35), M.fpc);
+  fpc.castShadow = true; fpc.receiveShadow = true;
+  gFpc.add(fpc);
+
+  /* --- pil: LiPo 401520, 20×15×4 --- */
+  const gBat = part('pil', 5);
+  gBat.add(box(20, 4, 15, 0, 4.7, 0, M.battery));
+
+  /* --- ana kart 28×20×0.8 + çipler + antenler --- */
+  // Gövde uçlara doğru inceldiği için tüm bileşenler |x| <= 13.5'te tutulur.
+  const gMain = part('anaKart', 14);
+  gMain.add(box(28, 0.8, 20, 0, 7.2, 0, M.pcbMain));
+  const chip = (w, h, d, x, y, z, mat = M.chip) => gMain.add(box(w, h, d, x, y, z, mat));
+  chip(11, 1.0, 11, 2.5, 8.1, 0, M.chipTop);       // nRF9151 (en büyük)
+  chip(6, 0.9, 6, -6, 8.05, -3);                   // nRF54L15
+  chip(4, 0.8, 4, -6, 8.0, -8);                    // nPM1300
+  chip(2.5, 0.85, 2.5, -11.5, 8.025, 2);           // LSM6DSV16X
+  chip(2, 0.8, 2, -11.5, 8.0, -7);                 // BMP581
+  chip(4.5, 0.7, 4, -11, 7.95, -3);                // MX25R6435F
+  chip(5, 0.7, 6, 10.5, 7.95, 0);                  // eSIM (MFF2)
+  chip(3, 0.8, 3, -2.5, 8.0, -8);                  // DRV2605L
+  const lra = cyl(2.3, 2.3, 1.6, 1, 8.4, 7.9, M.lra); // LRA titreşim motoru
+  gMain.add(lra);
+  // antenler: +X ucunda LTE ve GPS, -X ucunda 2.4 GHz (ince metalik şerit)
+  gMain.add(box(10, 0.35, 3.5, 8.5, 7.775, 7.25, M.metal));   // LTE
+  gMain.add(box(9, 0.35, 3.5, 9, 7.775, -7.25, M.metal));     // GPS
+  gMain.add(box(10, 0.35, 3.5, -8.5, 7.775, 7.25, M.metal));  // 2.4 GHz
+
+  /* --- alt yüzde 4 pinli manyetik şarj pogo pinleri (alt kapakla birlikte) --- */
+  const gAlt = part('alt', -32);
+  for (const z of [-3.6, -1.2, 1.2, 3.6]) {
+    gAlt.add(cyl(0.8, 0.8, 1.1, -9.3, -1.45, z, M.gold, 18));
+  }
+
+  /* --- üst kapak + durum LED'i (üst kapakla birlikte) --- */
+  const gUst = part('ust', 30);
+  const topLed = cyl(1.05, 1.05, 0.32, 0, 10.76, 0, M.ledMint, 26);
+  gUst.add(topLed);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: GLOW_TEX, blending: THREE.AdditiveBlending, depthWrite: false,
+    transparent: true, opacity: 0, color: 0xBFE5D9
+  }));
+  sprite.position.set(0, 11.05, 0);
+  sprite.scale.setScalar(9);
+  gUst.add(sprite);
+  parts.ust.led = topLed;
+  parts.ust.glow = sprite;
+
+  /* --- yan SOS butonu (kendi ekseni boyunca açılır) --- */
+  const gButon = part('buton', 0, -24);
+
+  /* --- ePTFE membran --- */
+  const gMem = part('membran', 0, -22);
+
+  return { gButon, gMem, gAlt, gUst };
+}
+
+/* ---------------- kayış (prosedürel, kaba STL kullanılmıyor) ---------------- */
+function buildStrap() {
+  const path = [];
+  const a = 28, b = 24.5, cy = -25.6, N = 128;
+  for (let i = 0; i < N; i++) {
+    const t = (i / N) * Math.PI * 2;
+    path.push(new THREE.Vector3(a * Math.sin(t), cy + b * Math.cos(t), 0));
+  }
+  const mesh = new THREE.Mesh(sweepRect(path, 22, 2.8), M.strap);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  const g = part('strap', 0);
+  g.add(mesh);
+  parts.strap.mesh = mesh;
+  return g;
+}
+
+/* ---------------- sahneyi kur ---------------- */
+const { gButon, gMem, gAlt, gUst } = buildInternals();
+buildStrap();
+
+// Optik pencere grubu (STL yüklenecek)
+const gPencere = part('pencere', -20);
+
+async function buildShell() {
+  log('shell: basladi');
+  const [ust, alt, buton, pencere, membran] = await Promise.all([
+    loadSTL('models/dostum_govde_ust.stl'),
+    loadSTL('models/dostum_govde_alt.stl'),
+    loadSTL('models/dostum_buton.stl'),
+    loadSTL('models/dostum_optik_pencere.stl'),
+    loadSTL('models/dostum_eptfe_membran.stl')
+  ]);
+  log('shell: stl bitti ' + [ust, alt, buton, pencere, membran].map(g => g ? 1 : 0).join(''));
+
+  // Üst kapak (gerçek STL) — hata olursa sessiz yedek kutu
+  const mUst = new THREE.Mesh(ust || new THREE.BoxGeometry(36, 9.6, 24), M.ust);
+  if (!ust) mUst.position.set(0, 5.8, 0);
+  mUst.castShadow = mUst.receiveShadow = true;
+  gUst.add(mUst);
+
+  // Alt kapak (gerçek STL)
+  const mAlt = new THREE.Mesh(alt || new THREE.BoxGeometry(36, 5.1, 24), M.alt);
+  if (!alt) mAlt.position.set(0, -1.55, 0);
+  mAlt.castShadow = mAlt.receiveShadow = true;
+  gAlt.add(mAlt);
+
+  // SOS butonu (gerçek STL) — CAD'de deliğe tam oturmuyor, hafif kaydırılıyor
+  const mBut = new THREE.Mesh(buton || new THREE.BoxGeometry(3.5, 3, 3.5), M.buton);
+  if (!buton) mBut.position.set(2.7, 3.5, -7.5);
+  mBut.position.z -= 3.3;            // deliği dolduracak şekilde dışarı
+  mBut.position.y -= 1.5;
+  mBut.castShadow = mBut.receiveShadow = true;
+  gButon.add(mBut);
+
+  // Optik pencere (gerçek STL, yarı saydam koyu cam)
+  const mWin = new THREE.Mesh(pencere || new THREE.BoxGeometry(11.5, 1.2, 7.5), M.cam);
+  if (!pencere) mWin.position.set(0, 0.2, 0);
+  mWin.receiveShadow = true;
+  gPencere.add(mWin);
+
+  // ePTFE membran (gerçek STL) — CAD'de yanlış export konumu, tasarım yerine alınıyor
+  const mMem = new THREE.Mesh(membran || new THREE.BoxGeometry(2.9, 0.4, 2.9), M.membran);
+  if (membran) mMem.position.set(0, 14.05, -11.85);   // ofset: yanlış export konumu -> tasarım yeri
+  else mMem.position.set(-10, 2, -12);
+  mMem.receiveShadow = true;
+  gMem.add(mMem);
+  log('shell: hazir');
+}
+
+/* ---------------- etiketler (callout) ---------------- */
+const labelDefs = [
+  // --- katman etiketleri (Bölüm 3: parçalar yerine otururken) ---
+  { id: 'ust',      anchor: [-8, 11.2, -6],  t: 'Üst kapak',        s: 'seramik yüzey · durum LED’i',        in: 0.385, out: 0.555, len: 64 },
+  { id: 'anaKart',  anchor: [-9, 7.2, -7],   t: 'Ana kart',         s: 'tüm sistem elektroniği burada',      in: 0.395, out: 0.555, len: 58 },
+  { id: 'pil',      anchor: [7, 4.7, 5],     t: 'LiPo 401520 · 130 mAh', s: '3–5 gün (tasarım hedefi)',      in: 0.405, out: 0.555, len: 50 },
+  { id: 'fpc',      anchor: [-11.5, 4.3, 0], t: 'FPC kablo',        s: 'sensör kartını ana karta bağlar',     in: 0.415, out: 0.555, len: 66 },
+  { id: 'sensor',   anchor: [5, 1.45, 5],    t: 'Sensör kartı 16×14 mm', s: 'PPG sensör ön ucu',             in: 0.425, out: 0.555, len: 54 },
+  { id: 'pencere',  anchor: [4, 0.2, 3],     t: 'Optik pencere',    s: 'ışık buradan geçer',                  in: 0.435, out: 0.555, len: 46 },
+  { id: 'alt',      anchor: [-6, -2, -8],    t: 'Alt kapak',        s: 'cilde bakan yüz · şarj pinleri',      in: 0.445, out: 0.555, len: 60 },
+  { id: 'buton',    anchor: [2.7, 3.5, -11], t: 'SOS butonu',       s: '3 saniye basılı tut',                 in: 0.455, out: 0.555, len: 28, alarm: true },
+  { id: 'membran',  anchor: [-10, 2, -12],   t: 'ePTFE membran',    s: 'su geçirmez havalandırma',            in: 0.465, out: 0.555, len: 98 },
+  // --- çip etiketleri (Bölüm 4: bağlantılar — sırayla gezinen tur) ---
+  { id: 'anaKart',  anchor: [2.5, 8.7, 0],   t: 'nRF9151',          s: 'LTE-M modem + GPS · telefona gerek yok', in: 0.565, out: 0.593, len: 46 },
+  { id: 'anaKart',  anchor: [10.5, 8.4, 0],  t: 'eSIM (MFF2)',      s: 'kendi hattı',                         in: 0.586, out: 0.614, len: 62, down: true },
+  { id: 'anaKart',  anchor: [-6, 8.6, -3],   t: 'nRF54L15',         s: 'Bluetooth · kurulum ve eşleştirme',   in: 0.607, out: 0.635, len: 88 },
+  { id: 'anaKart',  anchor: [-6, 8.5, -8],   t: 'nPM1300',          s: 'güç yönetimi + şarj',                 in: 0.628, out: 0.656, len: 52, down: true },
+  { id: 'anaKart',  anchor: [8.5, 8.2, 7.25],t: 'LTE + GPS anteni', s: 'haberleşme · konum',                  in: 0.649, out: 0.677, len: 58 },
+  { id: 'anaKart',  anchor: [-11.5, 8.6, 2], t: 'LSM6DSV16X',       s: 'ivme + jiroskop · düşme algılama',    in: 0.670, out: 0.698, len: 92, down: true },
+  { id: 'anaKart',  anchor: [-8.5, 8.2, 7.25],t: '2.4 GHz anten',   s: 'Bluetooth',                           in: 0.691, out: 0.719, len: 74 },
+  { id: 'sensor',   anchor: [-3.4, 1.1, 1.7],t: 'PPG LED’leri',     s: 'yeşil · kırmızı · kızılötesi',        in: 0.712, out: 0.740, len: 60, down: true },
+  { id: 'anaKart',  anchor: [-11.5, 8.5, -7],t: 'BMP581',           s: 'barometre · yükseklik değişimi',      in: 0.733, out: 0.761, len: 62 },
+  { id: 'anaKart',  anchor: [-2.5, 8.6, -8], t: 'DRV2605L + LRA',   s: 'titreşimli uyarı',                    in: 0.754, out: 0.782, len: 66, down: true }
+];
+
+const labelRoot = document.getElementById('labels');
+const labels = [];
+for (const def of labelDefs) {
+  if (isMobile && def.mobileHide) continue;
+  const el = document.createElement('div');
+  el.className = 'lbl';
+  const len = def.len * (isMobile ? 0.72 : 1);
+  el.innerHTML = `<span class="dot"></span><span class="line"></span><span class="txt"><b>${def.t}</b><i>${def.s}</i></span>`;
+  el.style.setProperty('--len', len.toFixed(0) + 'px');
+  el.style.setProperty('--lx', (len * 0.79).toFixed(0) + 'px');
+  el.style.setProperty('--ly', (-len * 0.62).toFixed(0) + 'px');
+  if (def.alarm) el.querySelector('b').style.color = 'var(--coral)';
+  if (def.down) el.classList.add('down');
+  labelRoot.appendChild(el);
+  labels.push({ def, el, anchor: new THREE.Vector3(...def.anchor) });
+}
+
+/* ---------------- bağlantı çizgileri (Bölüm 4) ---------------- */
+const connGroup = new THREE.Group();
+product.add(connGroup);
+const pulses = [];
+
+function addConnection(points) {
+  const pts = points.map(p => new THREE.Vector3(...p));
+  const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.2);
+  const geo = new THREE.BufferGeometry().setFromPoints(curve.getPoints(60));
+  const mat = new THREE.LineDashedMaterial({
+    color: 0xBFE5D9, transparent: true, opacity: 0, dashSize: 2.4, gapSize: 2.2, scale: 1
+  });
+  const line = new THREE.Line(geo, mat);
+  line.computeLineDistances();
+  connGroup.add(line);
+  // akan ışık noktaları
+  for (let i = 0; i < 2; i++) {
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, blending: THREE.AdditiveBlending, depthWrite: false,
+      transparent: true, opacity: 0, color: 0xBFE5D9
+    }));
+    spr.scale.setScalar(5.5);
+    connGroup.add(spr);
+    pulses.push({ spr, curve, offset: i / 2 });
+  }
+  return line;
+}
+
+// Parçalar açık (k=1) durumdaki bağlantı noktaları
+const K = Object.fromEntries(Object.entries(parts).map(([id, p]) => [id, p.dy]));
+const oy = id => K[id] || 0;
+addConnection([[-8, 1.9 + oy('sensor'), 0], [-11.6, 4.8 + oy('fpc'), 0], [-11, 6.8 + oy('anaKart'), 0]]); // sensör -> FPC -> ana kart
+addConnection([[-6, 6.7 + oy('pil'), -5], [-6, 8.4 + oy('anaKart'), -8]]);                                // pil -> nPM1300
+addConnection([[2.5, 8.7 + oy('anaKart'), 0], [8.5, 8.1 + oy('anaKart'), 7.25]]);                          // nRF9151 -> LTE anten
+addConnection([[2.5, 8.7 + oy('anaKart'), 0], [9, 8.1 + oy('anaKart'), -7.25]]);                           // nRF9151 -> GPS anten
+addConnection([[-11.5, 8.6 + oy('anaKart'), 2], [2.5, 8.7 + oy('anaKart'), 0]]);                           // IMU -> nRF9151
+const connMats = connGroup.children.filter(o => o.isLine).map(o => o.material);
+
+/* ---------------- animasyon durumu ---------------- */
+const view = {
+  theta: 0.98, phi: 1.08, radius: 178,
+  targetX: 0, targetY: 2,
+  rotY: 0,
+  strap: 1,
+  ledTop: 1,
+  ppg: { g1: 0, g2: 0, r: 0, ir: 0 },   // PPG LED sırası: yeşil -> kırmızı -> kızılötesi
+  conn: 0
+};
+
+const clock = new THREE.Clock();
+
+function applyFrame() {
+  // kamera
+  const target = new THREE.Vector3(view.targetX, view.targetY, 0);
+  const sph = new THREE.Spherical(view.radius, view.phi, view.theta);
+  camera.position.setFromSpherical(sph).add(target);
+  camera.lookAt(target);
+
+  // ürün dönüşü
+  product.rotation.y = view.rotY;
+
+  // parçaların patlatılma ofsetleri
+  for (const id in parts) {
+    const p = parts[id];
+    p.group.position.set(p.base.x, p.base.y + p.dy * p.k, p.base.z + p.dz * p.k);
+  }
+
+  // kayış görünürlüğü
+  M.strap.opacity = view.strap;
+  M.strap.transparent = view.strap < 0.999;
+  parts.strap.group.visible = view.strap > 0.02;
+
+  // üst LED + parlama
+  const t = clock.getElapsedTime();
+  const flick = 1 + 0.12 * Math.sin(t * 2.2);
+  M.ledMint.emissiveIntensity = view.ledTop * 2.6 * flick;
+  parts.ust.glow.material.opacity = view.ledTop * 0.85 * flick;
+
+  // PPG LED'leri (yeşil → kırmızı → kızılötesi sırası)
+  const seq = [view.ppg.g1, view.ppg.g2, view.ppg.r, view.ppg.ir];
+  const mats = [M.ledGreen, M.ledGreen, M.ledRed, M.ledIr];
+  for (let i = 0; i < 4; i++) {
+    const f = 1 + 0.18 * Math.sin(t * 13 + i * 1.7);
+    mats[i].emissiveIntensity = seq[i] * 2.4 * f;
+  }
+
+  // bağlantı çizgileri
+  for (const m of connMats) m.opacity = view.conn * 0.55;
+  connGroup.visible = view.conn > 0.01;
+  for (const p of pulses) {
+    p.spr.material.opacity = view.conn * 0.9;
+    const u = (t * 0.16 + p.offset) % 1;
+    p.spr.position.copy(p.curve.getPoint(u));
+  }
+}
+
+function updateLabels(progress) {
+  const w = innerWidth, h = innerHeight;
+  const v = new THREE.Vector3();
+  for (const L of labels) {
+    const { def, el } = L;
+    let vis = 0;
+    const fade = Math.min(0.014, (def.out - def.in) * 0.35);
+    if (progress >= def.in && progress <= def.out) {
+      vis = 1;
+      if (progress < def.in + fade) vis = (progress - def.in) / fade;
+      if (progress > def.out - fade) vis = (def.out - progress) / fade;
+    }
+    if (vis <= 0) { el.style.opacity = 0; continue; }
+    v.copy(L.anchor).applyMatrix4(parts[def.id].group.matrixWorld).project(camera);
+    if (v.z > 1) { el.style.opacity = 0; continue; }
+    const x = (v.x * 0.5 + 0.5) * w, y = (-v.y * 0.5 + 0.5) * h;
+    el.style.opacity = vis;
+    el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    el.classList.toggle('flip', x > w * 0.62);
+  }
+}
+
+/* ---------------- kaydırma senaryosu (GSAP + ScrollTrigger) ---------------- */
+gsap.registerPlugin(ScrollTrigger);
+
+const tl = gsap.timeline({
+  defaults: { ease: 'none' },
+  scrollTrigger: {
+    trigger: '#scroll-space',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 0.5
+  }
+});
+
+// --- Bölüm 1 (0–15): 360° dönüş ---
+tl.fromTo(view, { rotY: 0 }, { rotY: Math.PI * 2, duration: 15 }, 0);
+tl.fromTo(view, { radius: 178, theta: 0.98 }, { radius: 168, theta: 1.2, duration: 15 }, 0);
+
+// --- Bölüm 2 (15–30): kamera alt yüze, LED'ler sırayla ---
+tl.to(view, { phi: 2.05, radius: 150, targetY: 0.5, theta: 0.42, duration: 15, ease: 'power1.inOut' }, 15);
+tl.fromTo(view.ppg, { g1: 0, g2: 0, r: 0, ir: 0 }, { g1: 1, duration: 3 }, 17);
+tl.to(view.ppg, { g2: 1, duration: 3 }, 19.5);
+tl.to(view.ppg, { r: 1, duration: 3 }, 22);
+tl.to(view.ppg, { ir: 1, duration: 3 }, 24.5);
+
+// --- Bölüm 3 (30–55): exploded view ---
+tl.to(view, { phi: 1.52, radius: 240, targetY: 2, theta: 0.62, duration: 14, ease: 'power1.inOut' }, 30);
+tl.to(view, { strap: 0, duration: 5, ease: 'power2.inOut' }, 30);
+tl.to(view, { ledTop: 0.25, duration: 6 }, 33);
+// parçalar sırayla açılır (power3.inOut) — aşağıdan yukarıya
+const openSeq = [
+  ['alt', 32], ['pencere', 33.6], ['sensor', 35.2], ['fpc', 36.8],
+  ['pil', 38.4], ['anaKart', 40], ['ust', 41.6], ['buton', 43], ['membran', 43.8]
+];
+for (const [id, at] of openSeq) {
+  tl.to(parts[id], { k: 1, duration: 7, ease: 'power3.inOut' }, at);
+}
+
+// --- Bölüm 4 (55–75): bağlantılar ---
+tl.to(view, { theta: 1.02, radius: 215, targetY: 8, duration: 20, ease: 'power1.inOut' }, 55);
+tl.fromTo(view, { conn: 0 }, { conn: 1, duration: 5, ease: 'power2.out' }, 55);
+
+// --- Bölüm 5 (75–90): yeniden birleşme ---
+tl.to(view, { conn: 0, duration: 4, ease: 'power2.in' }, 75);
+const closeSeq = [
+  ['membran', 75.5], ['buton', 76], ['ust', 76.5], ['anaKart', 77.6], ['pil', 78.7],
+  ['fpc', 79.8], ['sensor', 80.9], ['pencere', 82], ['alt', 83.1]
+];
+for (const [id, at] of closeSeq) {
+  tl.to(parts[id], { k: 0, duration: 6, ease: 'power3.inOut' }, at);
+}
+tl.to(view, { strap: 1, duration: 5, ease: 'power2.out' }, 83);
+tl.to(view, { phi: 1.20, radius: 190, targetY: 2.5, theta: 0.82, duration: 12, ease: 'power1.inOut' }, 78);
+tl.to(view, { ledTop: 1, duration: 5, ease: 'power2.out' }, 85);
+
+// --- Bölüm 6 (90–100): teknik özet ---
+tl.to(view, { radius: 215, targetX: 15, theta: 0.95, duration: 10, ease: 'power1.inOut' }, 90);
+
+/* metin katmanları */
+function overlay(sel, inAt, outAt) {
+  const el = document.querySelector(sel);
+  if (inAt != null) tl.fromTo(el, { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 4, ease: 'power2.out' }, inAt);
+  if (outAt != null) {
+    if (inAt == null) tl.set(el, { autoAlpha: 1, y: 0 }, 0);
+    tl.to(el, { autoAlpha: 0, y: -22, duration: 3.5, ease: 'power2.in' }, outAt);
+  }
+}
+overlay('#s0', null, 9.5);
+overlay('#s1', 6, 16.5);
+overlay('#s2', 17, 29.5);
+overlay('#s3', 31, 53.5);
+overlay('#s4', 55, 73.5);
+overlay('#s5', 76, 88.5);
+overlay('#s6', 90.5, null);
+
+/* ---------------- render döngüsü ---------------- */
+const dbg = new URLSearchParams(location.search).get('dbg') === '1';
+let dbgEl = null, frameCount = 0;
+function log(msg) {
+  if (!dbgEl) return;
+  dbgEl.textContent += msg + '\n';
+}
+if (dbg) {
+  dbgEl = document.createElement('div');
+  dbgEl.style.cssText = 'position:fixed;left:10px;top:10px;z-index:99;color:#7CFC9A;background:#000;font:12px monospace;padding:8px;white-space:pre';
+  dbgEl.textContent = '';
+  document.body.appendChild(dbgEl);
+  log('module ok');
+  addEventListener('error', e => log('HATA: ' + e.message));
+  addEventListener('unhandledrejection', e => log('REDDEDILDI: ' + e.reason));
+}
+function frame() {
+  frameCount++;
+  if (frameCount <= 3) log('frame ' + frameCount);
+  applyFrame();
+  renderer.render(scene, camera);
+  product.updateMatrixWorld();
+  updateLabels(tl.progress());
+}
+renderer.setAnimationLoop(frame);
+
+/* ---------------- yeniden boyutlandırma ---------------- */
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile ? 1.25 : 1.5));
+});
+
+/* ---------------- ipucu ---------------- */
+let hintHidden = false;
+addEventListener('scroll', () => {
+  if (!hintHidden && scrollY > 30) {
+    hintHidden = true;
+    gsap.to('#hint', { autoAlpha: 0, duration: 0.5 });
+  }
+}, { passive: true });
+
+/* ---------------- sunum modu (?auto=1) ---------------- */
+function startAuto() {
+  const max = () => document.documentElement.scrollHeight - innerHeight;
+  const o = { v: 0 };
+  const tween = gsap.to(o, {
+    v: 1, duration: 40, ease: 'none',
+    onUpdate: () => window.scrollTo(0, o.v * max())
+  });
+  const cancel = () => tween.kill();
+  addEventListener('wheel', cancel, { passive: true });
+  addEventListener('touchstart', cancel, { passive: true });
+  addEventListener('keydown', cancel);
+}
+
+/* ?at=0..1 : belirli bir ilerlemeden başlat (prova / bölüm önizleme) */
+
+/* ---------------- başlat ---------------- */
+// ince ayar / test tutamağı (görünür bir etkisi yok)
+window.__c8 = { scene, camera, view, tl, parts, renderer };
+
+function hideLoader() {
+  const l = document.getElementById('loader');
+  if (dbgEl) dbgEl.textContent += '\nhideLoader';
+  if (!l) return;
+  l.style.transition = 'opacity .7s ease';
+  l.style.opacity = '0';
+  setTimeout(() => l.remove(), 800);       // rAF'e bağlı değil
+}
+window.__c8Ready = false;
+
+buildShell().finally(() => {
+  hideLoader();
+  window.scrollTo(0, 0);
+  ScrollTrigger.refresh();
+  const q = new URLSearchParams(location.search);
+  if (q.has('at')) {
+    // bölüm önizlemesi: zaman çizelgesini uygula, periyodik olarak tazele
+    const p = Math.min(1, Math.max(0, parseFloat(q.get('at')) || 0));
+    const hold = () => {
+      ScrollTrigger.getAll().forEach(st => st.kill());   // scrub yumuşatması geri almasın
+      tl.progress(p, true);
+      applyFrame();
+      renderer.render(scene, camera);
+      product.updateMatrixWorld();
+      updateLabels(p);
+      if (p > 0.02) { const h = document.getElementById('hint'); if (h) h.style.display = 'none'; }
+    };
+    hold();
+    setInterval(hold, 120);
+    const l = document.getElementById('loader');
+    if (l) l.remove();
+    log('loader dom: ' + !!document.getElementById('loader'));
+    log('at-mode p=' + p + ' kare cizildi');
+    window.__c8Ready = true;
+    return;
+  }
+  if (q.get('auto') === '1') {
+    setTimeout(startAuto, 600);
+  }
+  window.__c8Ready = true;
+});
+</script>
+</body>
+</html>
