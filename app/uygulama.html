@@ -510,12 +510,10 @@
       </div>
       <div class="btn-row">
         <button class="btn primary" id="btnConnect">Bağlan</button>
-        <button class="btn" id="btnConnectAll">Tümünü göster</button>
         <button class="btn" id="btnDisconnect">Bağlantıyı kes</button>
       </div>
       <div class="note" style="margin-top:8px">
-        "Bağlan" yalnızca bileklik adaylarını listeler. "Tümünü göster" sorun giderme
-        içindir, liste kalabalık olur.
+        "Bağlan" yalnızca M81b bilekliğini listeler.
       </div>
     </div>
 
@@ -534,6 +532,9 @@
 
     <details class="tech">
       <summary>Geliştirici seçenekleri: ham veri akışı</summary>
+      <div class="cmdrow">
+        <button class="chip" id="btnConnectAll">Tüm cihazları göster (sorun giderme)</button>
+      </div>
       <div class="note" style="margin-top:8px">
         Gelen paketlerdeki "SOS ata" bağlantısı, o paket geldiğinde acil alarmı tetikler.
         Protokol dökümü: demo/M81_PROTOKOL.md

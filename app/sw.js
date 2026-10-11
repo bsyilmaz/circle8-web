@@ -1,5 +1,5 @@
 // Dostum MVP — servis çalşanı (PWA kurulabilirliği için)
-const CACHE = "circle8-mvp-v2";
+const CACHE = "circle8-mvp-v3";
 const ASSETS = [
   "./",
   "./uygulama.html",
