@@ -649,11 +649,23 @@ async function connectFlow(all) {
       optionalServices: ["battery_service", "device_information", 0x1800, 0x1801, 0x1812, 0xFEF5, 0x56FF]
     });
     gattServer = await device.gatt.connect();
-    const name = device.name || "Bileklik";
+    const name = device.name || "Bilinmeyen cihaz";
+
+    // kopma takibi
+    device.addEventListener("gattserverdisconnected", () => {
+      $("badgeConn").classList.remove("on");
+      $("connText").textContent = "Bağlı değil";
+      setStatus("warn", "Bağlantı koptu", "Cihaz bağlantısı kesildi, tekrar bağlanın");
+      addEvent("Bileklik bağlantısı koptu", "info", "link");
+    });
+
+    if (!/M81/i.test(name)) {
+      toast("Dikkat: \"" + name + "\" seçildi. Bileklik M81b-105C olmalı.");
+    }
     $("badgeConn").classList.add("on");
-    $("connText").textContent = "Bağlı";
+    $("connText").textContent = "Keşif…";
     $("devName").textContent = name;
-    setStatus("", "Bağlantı kuruldu", name + " bağlı, veriler güncelleniyor");
+    setStatus("", "Cihaz bulundu", "Servisler keşfediliyor, birkaç saniye…");
     addEvent("Bileklik bağlandı: " + name, "info", "link");
 
     try {
@@ -704,9 +716,20 @@ async function connectFlow(all) {
       $("cmdStatus").textContent =
         "Komut kanalı 0x33F3 " + (txChar ? "hazır" : "bulunamadı") +
         ", cevap kanalı 0x33F4 dinleniyor.";
+
+      // sonucu acikca raporla
+      if (txChar) {
+        $("connText").textContent = "Bağlı";
+        setStatus("", "Bağlı — hazır", name + " bağlı, komut kanalı açıldı");
+        toast("Bağlandı: " + name + ". Komut kanalı hazır.");
+      } else {
+        $("connText").textContent = "Kanal yok";
+        setStatus("warn", "Bağlandı ama komut kanalı yok",
+          "Bu cihaz bileklik olmayabilir. Bağlantıyı kesip M81b-105C'yi seçin.");
+        toast("Bağlanıldı ama 0x33F3 kanalı bulunamadı. Yanlış cihaz seçilmiş olabilir.");
+      }
     } catch (_) {}
 
-    toast("Bağlantı kuruldu: " + name);
   } catch (err) {
     if (String(err.message).includes("cancelled")) {
       toast("Seçim penceresi kapandı. Listeden M81b-105C'yi seçmen gerekiyor.");
@@ -811,8 +834,12 @@ const PRESET_NAMES = {
 
 async function sendFrame(key) {
   const bytes = PRESETS[key]();
+  if (!gattServer || !gattServer.connected) {
+    toast("Önce bilekliğe bağlanın. (Cihaz sekmesi → Bağlan)");
+    return;
+  }
   if (!txChar) {
-    toast("Önce bilekliğe bağlanın.");
+    toast("Bağlı görünüyorsun ama komut kanalı (0x33F3) yok. Yanlış cihaza bağlanmış olabilirsin.");
     return;
   }
   try {
