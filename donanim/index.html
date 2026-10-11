@@ -35,6 +35,10 @@
       var(--bg);
   }
   #scene{ position:fixed; inset:0; z-index:1; width:100vw; height:100vh; display:block; }
+  #vig{
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    background:radial-gradient(118% 96% at 50% 46%, transparent 50%, rgba(2,7,6,.5) 100%);
+  }
 
   /* ---------- etiketler (3D -> ekran projeksiyonu) ---------- */
   #labels{ position:fixed; inset:0; z-index:3; pointer-events:none; }
@@ -162,6 +166,7 @@
 
 <div id="glow"></div>
 <canvas id="scene" aria-hidden="true"></canvas>
+<div id="vig"></div>
 <div id="labels"></div>
 
 <a id="brand" href="../index.html"><span class="ring"></span>circle8</a>
@@ -300,6 +305,9 @@ const TEX_COL = noiseTexture(256, 244, 18, true);
 TEX_COL.colorSpace = THREE.SRGBColorSpace;
 const TEX_ROUGH = noiseTexture(256, 150, 110, true);
 const TEX_BUMP = noiseTexture(256, 150, 215, true);
+// sert yüzeyler (seramik, cam, folyo, PCB) için çok daha yumuşak doku
+const TEX_ROUGH_SOFT = noiseTexture(256, 196, 46, true);
+const TEX_BUMP_SOFT = noiseTexture(256, 150, 64, true);
 const SILICON = {
   map: TEX_COL, roughnessMap: TEX_ROUGH, bumpMap: TEX_BUMP, bumpScale: 0.35,
   metalness: 0.02, sheen: 0.6, sheenRoughness: 0.5, sheenColor: new THREE.Color(0x2E9483),
@@ -307,25 +315,37 @@ const SILICON = {
 };
 
 const M = {
-  ust: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.05, clearcoat: 0.25, clearcoatRoughness: 0.45 }),
-  alt: new THREE.MeshPhysicalMaterial({ color: 0x2B3B39, roughness: 0.55, metalness: 0.1 }),
-  buton: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.08, clearcoat: 0.25 }),
-  // Mobilde transmission pahalı bir render geçişi; aynı görünüm yarı saydamlıkla da olur
+  // mat seramik: ince dokulu, hafif vernik
+  ust: new THREE.MeshPhysicalMaterial({
+    color: 0xC9D2CF, roughness: 0.48, roughnessMap: TEX_ROUGH_SOFT, bumpMap: TEX_BUMP_SOFT, bumpScale: 0.05,
+    metalness: 0.05, clearcoat: 0.38, clearcoatRoughness: 0.32
+  }),
+  alt: new THREE.MeshPhysicalMaterial({
+    color: 0x2B3B39, roughness: 0.56, roughnessMap: TEX_ROUGH_SOFT, bumpMap: TEX_BUMP_SOFT, bumpScale: 0.05,
+    metalness: 0.12, clearcoat: 0.18, clearcoatRoughness: 0.5
+  }),
+  buton: new THREE.MeshPhysicalMaterial({ color: 0xC9D2CF, roughness: 0.5, metalness: 0.08, clearcoat: 0.3, clearcoatRoughness: 0.35 }),
+  // AR kaplamalı optik cam: hafif iridescence (mavi-yeşil yansıma)
   cam: isMobile
     ? new THREE.MeshPhysicalMaterial({ color: 0x0B1614, roughness: 0.12, metalness: 0, transparent: true, opacity: 0.62 })
     : new THREE.MeshPhysicalMaterial({
         color: 0x0B1614, roughness: 0.1, metalness: 0, transmission: 0.55, thickness: 1.4,
-        ior: 1.5, transparent: true, opacity: 1
+        ior: 1.5, transparent: true, opacity: 1,
+        iridescence: 0.42, iridescenceIOR: 1.65, iridescenceThicknessRange: [180, 520],
+        clearcoat: 0.5, clearcoatRoughness: 0.12
       }),
   membran: new THREE.MeshPhysicalMaterial({ color: 0xE9EEEB, roughness: 0.85, transparent: true, opacity: 0.8, side: THREE.DoubleSide }),
   strap: new THREE.MeshPhysicalMaterial({ color: 0x1D5C53, roughness: 0.62, ...SILICON }),
   keeper: new THREE.MeshPhysicalMaterial({ color: 0x16483E, roughness: 0.7, ...SILICON }),
-  pcbSensor: new THREE.MeshStandardMaterial({ color: 0x14624A, roughness: 0.55, metalness: 0.12 }),
-  pcbMain: new THREE.MeshStandardMaterial({ color: 0x11463A, roughness: 0.55, metalness: 0.12 }),
+  pcbSensor: new THREE.MeshStandardMaterial({ color: 0x14624A, roughness: 0.58, roughnessMap: TEX_ROUGH_SOFT, bumpMap: TEX_BUMP_SOFT, bumpScale: 0.04, metalness: 0.12 }),
+  pcbMain: new THREE.MeshStandardMaterial({ color: 0x11463A, roughness: 0.58, roughnessMap: TEX_ROUGH_SOFT, bumpMap: TEX_BUMP_SOFT, bumpScale: 0.04, metalness: 0.12 }),
   chip: new THREE.MeshStandardMaterial({ color: 0x14181C, roughness: 0.42, metalness: 0.22 }),
   chipTop: new THREE.MeshStandardMaterial({ color: 0x1B2126, roughness: 0.36, metalness: 0.28 }),
   metal: new THREE.MeshStandardMaterial({ color: 0xA8B4B0, roughness: 0.28, metalness: 0.9 }),
-  battery: new THREE.MeshStandardMaterial({ color: 0xC9CFD2, roughness: 0.32, metalness: 0.85 }),
+  battery: new THREE.MeshPhysicalMaterial({
+    color: 0xC9CFD2, roughness: 0.34, roughnessMap: TEX_ROUGH_SOFT, bumpMap: TEX_BUMP_SOFT, bumpScale: 0.16,
+    metalness: 0.85, clearcoat: 0.28, clearcoatRoughness: 0.3     // gümüş folyo
+  }),
   gold: new THREE.MeshStandardMaterial({ color: 0xD8B25A, roughness: 0.25, metalness: 0.95 }),
   fpc: new THREE.MeshStandardMaterial({ color: 0xC9822B, roughness: 0.5, metalness: 0.12, side: THREE.DoubleSide }),
   lra: new THREE.MeshStandardMaterial({ color: 0x3A4248, roughness: 0.4, metalness: 0.7 }),
@@ -614,6 +634,25 @@ function buildStrap() {
 const { gButon, gMem, gAlt, gUst } = buildInternals();
 buildStrap();
 
+/* yumuşak temas gölgesi — ürünü zemine oturtur (stüdyo hissi) */
+function shadowTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 128, 8, 128, 128, 128);
+  g.addColorStop(0, 'rgba(0,0,0,0.55)');
+  g.addColorStop(0.5, 'rgba(0,0,0,0.26)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(c);
+}
+const groundShadow = new THREE.Mesh(
+  new THREE.PlaneGeometry(132, 98),
+  new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 0.9 })
+);
+groundShadow.rotation.x = -Math.PI / 2;
+groundShadow.position.set(0, -53, 0);
+product.add(groundShadow);
+
 // Optik pencere grubu (STL yüklenecek)
 const gPencere = part('pencere', -20);
 
@@ -768,14 +807,18 @@ const view = {
 const clock = new THREE.Clock();
 
 function applyFrame() {
+  const t = clock.getElapsedTime();
+
   // kamera
   const target = new THREE.Vector3(view.targetX, view.targetY, 0);
   const sph = new THREE.Spherical(view.radius, view.phi, view.theta);
   camera.position.setFromSpherical(sph).add(target);
   camera.lookAt(target);
 
-  // ürün dönüşü
+  // ürün dönüşü + çok hafif nefes hareketi (cansız görünmesin)
   product.rotation.y = view.rotY;
+  product.rotation.z = Math.sin(t * 0.27) * 0.011;
+  product.position.y = Math.sin(t * 0.45) * 0.45;
 
   // parçaların patlatılma ofsetleri
   for (const id in parts) {
@@ -789,9 +832,10 @@ function applyFrame() {
   M.keeper.opacity = view.strap;
   M.keeper.transparent = view.strap < 0.999;
   parts.strap.group.visible = view.strap > 0.02;
+  groundShadow.material.opacity = 0.9 * view.strap;
+  groundShadow.visible = view.strap > 0.02;
 
   // üst LED + parlama
-  const t = clock.getElapsedTime();
   const flick = 1 + 0.12 * Math.sin(t * 2.2);
   M.ledMint.emissiveIntensity = view.ledTop * 2.6 * flick;
   parts.ust.glow.material.opacity = view.ledTop * 0.85 * flick;
