@@ -333,8 +333,13 @@
       <h2>Sağlık Verileri</h2>
       <div class="row">
         <div class="ic" data-ic="droplet"></div>
-        <div><div class="lbl">Kan oksijeni</div><div class="meta">Prototip 1'de PPG sensöründen</div></div>
+        <div><div class="lbl">Kan oksijeni</div><div class="meta">Ölçümle birlikte güncellenir</div></div>
         <div class="val dim" id="spo2Val">--<small>%</small></div>
+      </div>
+      <div class="row">
+        <div class="ic" data-ic="activity"></div>
+        <div><div class="lbl">Tansiyon</div><div class="meta">Ölçümle birlikte güncellenir</div></div>
+        <div class="val dim" id="bpVal">--<small>mmHg</small></div>
       </div>
       <div class="row">
         <div class="ic" data-ic="thermometer"></div>
@@ -899,29 +904,46 @@ function onPacket(hex) {
   logPacket("rx", hex);
   const b = hex.split(" ").map((x) => parseInt(x, 16));
 
-  // canlı veri göstergesi: paket gelip gelmedigini ana ekranda goster
+  // canlı veri göstergesi
   const rx = $("rxLine");
   rx.classList.add("live");
   rx.textContent = "Gelen veri (" + new Date().toLocaleTimeString("tr-TR") + "): " + hex;
 
-  // ölçüm sırasında aday nabız yorumu (ham veriden, doğrulanmadı)
-  if (measuring && b.length >= 2) {
-    for (const cand of [b[1], b[2]]) {
-      if (cand >= 30 && cand <= 200) {
-        pushHr(cand);
-        $("hrTime").innerHTML = '<span class="measuring-dot"></span>Ham veriden yorumlandı · ' +
-          new Date().toLocaleTimeString("tr-TR");
-        break;
-      }
-    }
+  // --- sensör çerçevesi (APK çözümlendi):
+  // byte[1]=nabız, [2]=sistolik, [3]=diyastolik, [4]=SpO2, [5]=yorgunluk
+  if (b.length >= 6 && b[1] >= 30 && b[1] <= 200 && b[2] >= 60 && b[2] <= 220 &&
+      b[3] >= 30 && b[3] <= 150 && b[4] >= 70 && b[4] <= 100) {
+    pushHr(b[1]);
+    $("spo2Val").innerHTML = b[4] + "<small>%</small>";
+    $("spo2Val").classList.remove("dim");
+    $("bpVal").innerHTML = b[2] + "/" + b[3] + "<small>mmHg</small>";
+    $("bpVal").classList.remove("dim");
+    $("hrTime").innerHTML = '<span class="measuring-dot"></span>Canlı · ' + new Date().toLocaleTimeString("tr-TR");
+    return;
   }
 
-  if (b[0] === 0x03 && b.length >= 5) {
-    const steps = (b[1] | (b[2] << 8) | (b[3] << 16) | (b[4] << 24)) >>> 0;
-    if (steps > 0 && steps < 200000) {
-      $("stepsVal").innerHTML = steps.toLocaleString("tr-TR");
-      $("stepsVal").classList.remove("dim");
-      $("stepsMeta").textContent = "Son senkron " + new Date().toLocaleTimeString("tr-TR");
+  // --- periyodik ölçüm çerçevesi: byte[1..4]=zaman (LE), byte[5]=nabız
+  if (b.length >= 6 && measuring && b[5] >= 30 && b[5] <= 200) {
+    pushHr(b[5]);
+    if (b[6] >= 70 && b[6] <= 100) {
+      $("spo2Val").innerHTML = b[6] + "<small>%</small>";
+      $("spo2Val").classList.remove("dim");
+    }
+    $("hrTime").innerHTML = '<span class="measuring-dot"></span>Otomatik ölçüm · ' + new Date().toLocaleTimeString("tr-TR");
+    return;
+  }
+
+  // --- adım çerçevesi: byte[1..4] = adım sayısı (little-endian)
+  if (b[0] === 0x03 || b[0] === 0x83 || b[0] === 0x13) {
+    if (b.length >= 5) {
+      const steps = (b[1] | (b[2] << 8) | (b[3] << 16) | (b[4] << 24)) >>> 0;
+      if (steps > 0 && steps < 200000) {
+        $("stepsVal").innerHTML = steps.toLocaleString("tr-TR");
+        $("stepsVal").classList.remove("dim");
+        $("stepsMeta").textContent = "Son senkron " + new Date().toLocaleTimeString("tr-TR");
+        weekSteps[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] = steps;
+        drawWeekBars();
+      }
     }
   }
 }
@@ -1037,7 +1059,7 @@ $("btnLocate").addEventListener("click", () => {
 $("btnLocate2").addEventListener("click", updateLocation);
 
 /* ---------------- Alarm ---------------- */
-function triggerAlarm(title, source) {
+async function triggerAlarm(title, source) {
   $("alarmTitle").textContent = title;
   $("alarmTime").textContent = new Date().toLocaleString("tr-TR");
   $("alarmSource").textContent = "Kaynak: " + source;
@@ -1047,6 +1069,11 @@ function triggerAlarm(title, source) {
 
   // telefon titresin (destekleyen cihazlarda)
   if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 600]);
+
+  // bileklik de titresin (cihaz bagliysa)
+  if (gattServer && gattServer.connected && txChar) {
+    try { await sendFrame("find"); } catch (_) {}
+  }
 
   // tarayici bildirimi (uygulama arka plandayken de gorunur)
   if ("Notification" in window && Notification.permission === "granted") {
