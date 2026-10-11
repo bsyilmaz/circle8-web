@@ -1,11 +1,15 @@
-# circle8 OG gorseli (Twitter/X kart onizlemesi) — Pillow
+# circle8 OG gorseli: urun render'i + marka + baslik (Twitter/X kart onizlemesi)
 from PIL import Image, ImageDraw, ImageFont
+import math
 
 W, H = 1200, 630
-img = Image.new("RGB", (W, H), "#f4f5f6")
-d = ImageDraw.Draw(img)
-
+BG = (233, 242, 240)          # teal-soft panel rengi
+INK = (16, 20, 22)
+INK2 = (82, 90, 94)
 TEAL_DARK = (28, 111, 102)
+
+img = Image.new("RGB", (W, H), BG)
+d = ImageDraw.Draw(img)
 
 def font(size, bold=False):
     for p in [r"C:\Windows\Fonts\segoeuib.ttf" if bold else r"C:\Windows\Fonts\segoeui.ttf",
@@ -16,8 +20,7 @@ def font(size, bold=False):
             continue
     return ImageFont.load_default()
 
-# logo isareti (sonsuzluk)
-import math
+# logo: sonsuzluk isareti
 def lemniscate(cx, cy, a, n=200):
     pts = []
     for i in range(n + 1):
@@ -26,15 +29,29 @@ def lemniscate(cx, cy, a, n=200):
         pts.append((cx + a * math.cos(t) / den, cy + a * math.sin(t) * math.cos(t) / den))
     return pts
 
-pts = lemniscate(170, 200, 70)
-d.line([(x + 6, y + 6) for x, y in pts], fill=(200, 208, 211), width=22, joint="curve")
-d.line(pts, fill=TEAL_DARK, width=22, joint="curve")
-d.text((260, 160), "circle8", font=font(64, bold=True), fill=(20, 24, 26))
+pts = lemniscate(120, 105, 46)
+d.line(pts, fill=TEAL_DARK, width=15, joint="curve")
+d.text((180, 74), "circle8", font=font(46, bold=True), fill=INK)
 
-d.text((110, 340), "Keep your parents safe.", font=font(58, bold=True), fill=(20, 24, 26))
-d.text((110, 415), "Even from miles away.", font=font(58, bold=True), fill=(20, 24, 26))
-d.text((110, 510), "Fall detection · Heart rate · Location · First 2,000 signups get a launch discount",
-       font=font(27), fill=(92, 100, 104))
+# baslik
+d.text((70, 220), "Keep your parents safe.", font=font(62, bold=True), fill=INK)
+d.text((70, 300), "Even from miles away.", font=font(62, bold=True), fill=INK)
+d.text((70, 405), "Fall detection  ·  Heart rate  ·  Location", font=font(30), fill=INK2)
+
+# teklif satiri
+offer_y = 500
+d.rounded_rectangle([70, offer_y, 720, offer_y + 66], radius=14, fill=TEAL_DARK)
+d.text((95, offer_y + 17), "First 2,000 signups get a launch discount", font=font(28, bold=True), fill=(255, 255, 255))
+
+# urun render'i (sag taraf)
+try:
+    prod = Image.open("product.png").convert("RGBA")
+    target_h = 520
+    scale = target_h / prod.height
+    prod = prod.resize((int(prod.width * scale), target_h), Image.LANCZOS)
+    img.paste(prod, (W - prod.width - 30, 60), prod)
+except Exception as e:
+    print("urun gorseli alinamadi:", e)
 
 img.save("og.png")
 print("og.png yazildi")
