@@ -1,0 +1,197 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Dostum P1 - Interaktif 3D Sunum (B konsepti)</title>
+<style>
+  body { margin:0; font-family: system-ui, sans-serif; background:#14171a; color:#e8e8e8; }
+  #panel { position:absolute; top:10px; left:10px; background:#1e2226cc; padding:14px 16px;
+           border-radius:10px; max-width:330px; font-size:13px; }
+  button { margin:3px 4px 3px 0; padding:6px 10px; border:0; border-radius:6px;
+           background:#2e7d32; color:#fff; cursor:pointer; }
+  button.alt { background:#455a64; } button.on { background:#e97c6a; }
+  #info { margin-top:10px; padding:8px; background:#0006; border-radius:6px; min-height:60px; }
+  #status { margin-top:6px; font-size:11px; color:#9fd4d8; }
+</style>
+</head>
+<body>
+<div id="panel">
+  <b>Dostum P1 â€” Prototip 1 (B konsepti)</b><br>
+  Kavisli bileklik Â· 36Ã—24Ã—10,6 mm Â· LTE-M/NB-IoT + GNSS + BLE
+  <div>
+    <button id="bExploded">PatlatÄ±lmÄ±ÅŸ gÃ¶rÃ¼nÃ¼m</button>
+    <button id="bWiring" class="alt">BaÄŸlantÄ± modu</button>
+    <button id="bFall" class="alt">DÃ¼ÅŸme senaryosu</button>
+    <button id="bReset" class="alt">SÄ±fÄ±rla</button>
+  </div>
+  <div id="info">Bir parÃ§aya tÄ±klayÄ±n: adÄ±, gÃ¶revi ve baÄŸlantÄ±larÄ±.</div>
+  <div id="status">Geometri: govde/*.stl (CadQuery) Â· ParÃ§alar: pcb/dostum_yerlesim.csv</div>
+</div>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x14171a);
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 800);
+camera.position.set(85, -75, 60);   // model merkezine bakan kadraj
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setSize(innerWidth, innerHeight); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;      // fotogercekci ton esleme
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(-12, 10, 18);
+
+// --- fotogercekci aydinlatma: oda ortam haritasi (yansimalar) + ana isik + yumusak golge
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.background = new THREE.Color(0x1a1f22);
+const key = new THREE.DirectionalLight(0xffffff, 2.1);
+key.position.set(35, -45, 70); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.left = -45; key.shadow.camera.right = 45;
+key.shadow.camera.top = 45; key.shadow.camera.bottom = -45;
+scene.add(key);
+scene.add(new THREE.AmbientLight(0xbfd4e0, 0.25));
+const fill = new THREE.DirectionalLight(0x9fc7ff, 0.55); fill.position.set(-40, 30, 25); scene.add(fill);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(300, 300),
+  new THREE.ShadowMaterial({ opacity: 0.30 }));
+floor.rotation.x = -Math.PI / 2; floor.position.z = -9.5; floor.receiveShadow = true;
+scene.add(floor);
+
+// CAD (Z=yukari) -> three.js (Y=yukari) donusumu: tum model bu grupta
+const model = new THREE.Group();
+model.rotation.x = -Math.PI / 2;   // CAD Z -> sahne Y
+model.position.y = 24;             // montaj merkezini orijinle (yaklasik) hizala
+scene.add(model);
+const parts = [];
+const loader = new STLLoader();
+function addSTL(url, color, name, role, nets, pos=[0,0,0]) {
+  loader.load(url, geo => {
+    geo.computeVertexNormals();
+    // materyal: govde mat plastik, kayis silikon, pencere cam (transmisyonlu)
+    const isGlass = name.includes('pencere');
+    const mat = isGlass
+      ? new THREE.MeshPhysicalMaterial({ color: 0x8fd3d8, roughness: 0.12, metalness: 0,
+          transmission: 0.55, thickness: 0.6, transparent: true, opacity: 0.85 })
+      : new THREE.MeshStandardMaterial({ color,
+          roughness: name.includes('kayÄ±ÅŸ') ? 0.92 : 0.62, metalness: 0.06 });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    mesh.position.set(...pos);
+    mesh.userData = { name, role, nets, baseY: mesh.position.y };
+    model.add(mesh); parts.push(mesh);
+  });
+}
+// A5: govde gercek STL'den (CadQuery ciktisi)
+addSTL('./dostum_govde_alt.stl', 0x3a3f44, 'Alt kapak (PC/ABS, R42)',
+  'Cilde kavisli temas yuzeyi; optik pencere ve pogo yuvasi burada. IP67 contasi kenar kanalinda.', ['GND kalkanÄ±'], [0,0,0]);
+addSTL('./dostum_govde_ust.stl', 0x3a3f44, 'Ãœst kapak (PC/ABS, hafif kavisli)',
+  'Dis yuz; buton deligi ve isik kilavuzu. Uc profili spline ile 8 mm\'ye iner.', [], [0,0,0]);
+// A5: kayis - iki tarafa yumusak gecis (5d-4: cift tarafli + kamera ortali)
+loader.load('./dostum_kayis.stl', geo => {
+  geo.computeVertexNormals();
+  for (const rot of [0, Math.PI]) {
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x8a9b7a, roughness: 0.9 }));
+    mesh.rotation.z = rot;
+    mesh.userData = { name: 'Silikon kayÄ±ÅŸ (22 mm, adaÃ§ayÄ± yeÅŸili)',
+      role: 'Ä°ki tarafta kesintisiz; gÃ¶mÃ¼lÃ¼ kanalla sabit; metal yok.', nets: ['â€”'], baseY: 0 };
+    model.add(mesh); parts.push(mesh);
+  }
+});
+addSTL('./dostum_buton.stl', 0xe97c6a, 'SOS butonu (mercan)',
+  'Yan yuzde; 3 sn basili SOS; BAT54C ile SHPHLD/BTN izolasyonlu.', ['BTN_SOS','SHPHLD']);
+addSTL('./dostum_optik_pencere.stl', 0x9fd4d8, 'Optik pencere',
+  '530-940 nm geciren cam/optik PC; kavis tepe noktasinda.', ['â€”']);
+addSTL('./dostum_eptfe_membran.stl', 0xd9d9d9, 'ePTFE havalandÄ±rma membranÄ±',
+  'Yan duvarda; BMP581 kapali govdede hava alsin diye (IP67 sinifi).', ['â€”']);
+
+// A5: kart parcalari yerlesim CSV'sinden (kutu modeli)
+fetch('./dostum_yerlesim.csv').then(r => r.text()).then(txt => {
+  const lines = txt.replace(/^\uFEFF/, '').trim().split('\n');
+  const head = lines[0].split(';');
+  const idx = Object.fromEntries(head.map((h, i) => [h, i]));
+  const colors = { ANA: 0x1b5e20, SENSOR: 0x2e7d32 };
+  for (const ln of lines.slice(1)) {
+    const c = ln.split(';');
+    if (c.length < 10) continue;
+    const kart = c[idx['Kart']], katman = c[idx['Katman']];
+    if (katman === 'MEKANIK') continue;
+    const x = parseFloat(c[idx['X_mm']]), y = parseFloat(c[idx['Y_mm']]);
+    let [w, h] = c[idx['Boyut_mm']].split('x').map(parseFloat);
+    const a = parseFloat(c[idx['Aci_deg']]) % 180;
+    if (a === 90) [w, h] = [h, w];
+    const hh = parseFloat(c[idx['Yukseklik_mm']]);
+    const ref = c[idx['Ref']], note = c[idx['Not']] || '';
+    const isAnt = katman === 'ANT';
+    const col = isAnt ? 0xc07030 : (kart === 'SENSOR' ? 0x8fbf7f : colors[kart]);
+    const z = kart === 'ANA' ? (c[idx['Yuz']] === 'ALT' ? -2.5 : 2.0) : -6.5;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, hh),
+      new THREE.MeshStandardMaterial({ color: col, roughness: 0.6 }));
+    mesh.position.set(x, y, z + (c[idx['Yuz']] === 'ALT' ? -hh/2 : hh/2));
+    mesh.userData = { name: `${ref} (${kart})`, role: note || 'BileÅŸen', nets: [katman], baseY: mesh.position.z };
+    model.add(mesh); parts.push(mesh);
+  }
+});
+
+// --- etkilesim ---
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+addEventListener('pointerdown', e => {
+  mouse.set((e.clientX/innerWidth)*2-1, -(e.clientY/innerHeight)*2+1);
+  ray.setFromCamera(mouse, camera);
+  const hit = ray.intersectObjects(parts)[0];
+  if (hit) {
+    const u = hit.object.userData;
+    document.getElementById('info').innerHTML =
+      `<b>${u.name}</b><br>${u.role}<br><i>BaÄŸlantÄ±/katman:</i> ${u.nets.join(', ')}`;
+  }
+});
+let exploded = false, wiring = false, falling = false, t0 = 0;
+const wireLines = [];
+document.getElementById('bExploded').onclick = () => {
+  exploded = !exploded;
+  parts.forEach((p, i) => {
+    const axis = p.userData.name.includes('kayis') ? 'x' : 'z';
+    p.position[axis] += exploded ? (i % 2 ? 14 : -14) : (i % 2 ? -14 : 14);
+  });
+};
+document.getElementById('bWiring').onclick = (e) => {
+  wiring = !wiring; e.target.classList.toggle('on', wiring);
+  if (wiring) {
+    const routes = [
+      [[0,0,2],[-6,0,2], 0xff5252], [[-6,0,2],[0,0,-6.5], 0xffc400],
+      [[13.5,-5,2],[-2,1,2], 0x76ff03], [[-2,-7.5,-2.5],[0,0,-6.5], 0x40c4ff]
+    ];
+    routes.forEach(([a, b, col]) => {
+      const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(...a), new THREE.Vector3(...b)]);
+      const l = new THREE.Line(g, new THREE.LineBasicMaterial({ color: col }));
+      scene.add(l); wireLines.push(l);
+    });
+    document.getElementById('info').innerHTML =
+      '<b>BaÄŸlantÄ± modu</b><br><span style="color:#ff5252">â– </span> GÃ¼Ã§ (VSYS/VBAT) Â· <span style="color:#40c4ff">â– </span> IÂ²C Â· <span style="color:#ffc400">â– </span> SPI (PPG) Â· <span style="color:#76ff03">â– </span> RF';
+  } else { wireLines.forEach(l => scene.remove(l)); wireLines.length = 0; }
+};
+document.getElementById('bFall').onclick = (e) => {
+  falling = !falling; t0 = performance.now();
+  e.target.classList.toggle('on', falling);
+  if (falling) document.getElementById('info').innerHTML =
+    '<b>DÃ¼ÅŸme senaryosu</b><br>LSM6DSV16X dÃ¼ÅŸmeyi algÄ±lar â†’ titreÅŸim + 30 sn iptal penceresi â†’ alarm: LTE-M â†’ bulut â†’ aile. Konum: GNSS + baz istasyonu.';
+};
+document.getElementById('bReset').onclick = () => location.reload();
+(function animate() {
+  requestAnimationFrame(animate);
+  if (falling) scene.rotation.x = Math.min((performance.now() - t0) / 1000 * 1.2, Math.PI / 2);
+  controls.update(); renderer.render(scene, camera);
+})();
+</script>
+</body>
+</html>
+
