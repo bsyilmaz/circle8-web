@@ -37,7 +37,7 @@
   #scene{ position:fixed; inset:0; z-index:1; width:100vw; height:100vh; display:block; }
   #vig{
     position:fixed; inset:0; z-index:2; pointer-events:none;
-    background:radial-gradient(118% 96% at 50% 46%, transparent 50%, rgba(2,7,6,.5) 100%);
+    background:radial-gradient(84% 72% at 50% 45%, rgba(2,7,6,0) 44%, rgba(2,7,6,0.55) 100%);
   }
 
   /* ---------- etiketler (3D -> ekran projeksiyonu) ---------- */
@@ -639,18 +639,18 @@ function shadowTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 256;
   const ctx = c.getContext('2d');
   const g = ctx.createRadialGradient(128, 128, 8, 128, 128, 128);
-  g.addColorStop(0, 'rgba(0,0,0,0.55)');
-  g.addColorStop(0.5, 'rgba(0,0,0,0.26)');
+  g.addColorStop(0, 'rgba(0,0,0,0.72)');
+  g.addColorStop(0.5, 'rgba(0,0,0,0.38)');
   g.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(c);
 }
 const groundShadow = new THREE.Mesh(
-  new THREE.PlaneGeometry(132, 98),
-  new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 0.9 })
+  new THREE.PlaneGeometry(142, 104),
+  new THREE.MeshBasicMaterial({ map: shadowTexture(), transparent: true, depthWrite: false, opacity: 1 })
 );
 groundShadow.rotation.x = -Math.PI / 2;
-groundShadow.position.set(0, -53, 0);
+groundShadow.position.set(0, -51.8, 0);
 product.add(groundShadow);
 
 // Optik pencere grubu (STL yüklenecek)
@@ -832,7 +832,7 @@ function applyFrame() {
   M.keeper.opacity = view.strap;
   M.keeper.transparent = view.strap < 0.999;
   parts.strap.group.visible = view.strap > 0.02;
-  groundShadow.material.opacity = 0.9 * view.strap;
+  groundShadow.material.opacity = view.strap;
   groundShadow.visible = view.strap > 0.02;
 
   // üst LED + parlama
