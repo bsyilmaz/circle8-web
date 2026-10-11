@@ -99,6 +99,13 @@
   .hr-unit { font-size: 13px; color: var(--text2); font-weight: 600; margin-top: 4px; }
   .hr-time { font-size: 11px; color: var(--text3); margin-top: 6px; }
   #ecgCanvas { width: 100%; height: 64px; margin: 6px 0 4px; }
+  .rx-line {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px;
+    color: var(--text3); background: #fafbfc; border: 1px solid var(--line);
+    border-radius: 8px; padding: 7px 10px; margin-bottom: 12px;
+    overflow-wrap: anywhere;
+  }
+  .rx-line.live { color: var(--green); border-color: var(--green); }
   .measuring-dot {
     display: inline-block; width: 7px; height: 7px; border-radius: 50%;
     background: var(--green); margin-right: 5px; vertical-align: 1px;
@@ -277,6 +284,7 @@
         </div>
       </div>
       <canvas id="ecgCanvas"></canvas>
+      <div class="rx-line" id="rxLine">Gelen veri: henüz paket yok</div>
       <button class="btn primary block" id="btnMeasure">Ölçüm başlat</button>
       <div class="toggle-row">
         <div class="lbl"><span class="measuring-dot"></span>Otomatik ölçüm (sürekli takip)</div>
@@ -722,6 +730,24 @@ function logPacket(src, hex) {
 function onPacket(hex) {
   logPacket("rx", hex);
   const b = hex.split(" ").map((x) => parseInt(x, 16));
+
+  // canlı veri göstergesi: paket gelip gelmedigini ana ekranda goster
+  const rx = $("rxLine");
+  rx.classList.add("live");
+  rx.textContent = "Gelen veri (" + new Date().toLocaleTimeString("tr-TR") + "): " + hex;
+
+  // ölçüm sırasında aday nabız yorumu (ham veriden, doğrulanmadı)
+  if (measuring && b.length >= 2) {
+    for (const cand of [b[1], b[2]]) {
+      if (cand >= 30 && cand <= 200) {
+        pushHr(cand);
+        $("hrTime").innerHTML = '<span class="measuring-dot"></span>Ham veriden yorumlandı · ' +
+          new Date().toLocaleTimeString("tr-TR");
+        break;
+      }
+    }
+  }
+
   if (b[0] === 0x03 && b.length >= 5) {
     const steps = (b[1] | (b[2] << 8) | (b[3] << 16) | (b[4] << 24)) >>> 0;
     if (steps > 0 && steps < 200000) {
@@ -729,9 +755,6 @@ function onPacket(hex) {
       $("stepsVal").classList.remove("dim");
       $("stepsMeta").textContent = "Son senkron " + new Date().toLocaleTimeString("tr-TR");
     }
-  }
-  if (b[0] === 0x14 || b[0] === 0x15) {
-    // nabız ölçüm cevapları: yorum protokol kaydında, ham akışta görünür
   }
 }
 
@@ -743,6 +766,7 @@ function buildFrame(cmd, ...rest) {
   return f;
 }
 function le32(n) { return [n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]; }
+function be32(n) { return [(n >>> 24) & 0xFF, (n >>> 16) & 0xFF, (n >>> 8) & 0xFF, n & 0xFF]; }
 
 const PRESETS = {
   find:    () => buildFrame(0x04, 0x0A),
@@ -752,6 +776,8 @@ const PRESETS = {
   // setAutoHeartMode (0x19): 08:00-22:00 arasi, 30 dakikada bir olcum
   automeasure:    () => buildFrame(0x19, 8, 0, 22, 0, 1, 30, 1),
   automeasureoff: () => buildFrame(0x19, 8, 0, 22, 0, 0, 30, 1),
+  // senkron oturumu acilisi (APK: 0xA3 0x11 + buyuk-endian zaman damgasi)
+  sync:    () => buildFrame(0xA3, 0x11, ...be32(Math.floor(Date.now() / 1000))),
   steps:   () => buildFrame(0x03),
   bat:     () => buildFrame(0x0B)
 };
@@ -782,13 +808,22 @@ document.querySelectorAll("[data-cmd]").forEach((b) =>
   b.addEventListener("click", () => sendFrame(b.dataset.cmd))
 );
 
+let measuring = false;
+
 $("btnMeasure").addEventListener("click", async () => {
+  // 1) senkron oturumunu ac (cihaz cevaplari bu oturumda gonderiyor olabilir)
+  await sendFrame("sync");
+  // 2) olcumu baslat
   await sendFrame("hrstart");
+  measuring = true;
   setEcg(true);
   $("hrTime").innerHTML = '<span class="measuring-dot"></span>Ölçülüyor';
+  $("rxLine").textContent = "Ölçüm açık, cihazdan veri bekleniyor…";
+  $("rxLine").classList.remove("live");
   setStatus("warn", "Nabız ölçülüyor", "Bileklik ölçüm yapıyor, birkaç saniye sürebilir");
   setTimeout(async () => {
     await sendFrame("hrstop");
+    measuring = false;
     setEcg(false);
     if ($("hrTime").textContent.includes("Ölçülüyor")) {
       $("hrTime").textContent = "Cevap bekleniyor";
