@@ -16,133 +16,170 @@
   :root {
     --bg: #f4f5f6;
     --card: #ffffff;
-    --text: #14181a;
-    --text2: #5c6468;
-    --text3: #8b9296;
-    --line: #e4e7e8;
+    --ink: #101416;
+    --ink2: #525a5e;
+    --ink3: #8b9296;
+    --line: #e2e5e7;
     --teal: #1c6f66;
-    --teal-dark: #14544d;
-    --teal-soft: #eaf3f1;
+    --teal-dark: #10403b;
+    --teal-deep: #0d3733;
+    --teal-soft: #e9f2f0;
     --red: #c62828;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
   body {
-    background: var(--bg); color: var(--text);
+    background: var(--bg); color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
-    font-size: 16px; line-height: 1.55;
+    font-size: 16px; line-height: 1.6;
   }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
 
   /* ---------- Header ---------- */
-  header { padding: 18px 0; display: flex; align-items: center; gap: 10px; }
-  .logo { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 700; letter-spacing: -0.2px; }
+  header { padding: 22px 0; display: flex; align-items: center; }
+  .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
   .header-cta {
-    margin-left: auto; background: var(--teal); color: #fff; text-decoration: none;
-    padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 650;
+    margin-left: auto; background: var(--ink); color: #fff; text-decoration: none;
+    padding: 11px 20px; border-radius: 10px; font-size: 14px; font-weight: 650;
   }
 
   /* ---------- Hero ---------- */
-  .hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 36px; align-items: center; padding: 40px 0 30px; }
-  h1 { font-size: 42px; line-height: 1.12; letter-spacing: -1px; font-weight: 750; }
-  .lead { font-size: 18px; color: var(--text2); margin-top: 16px; max-width: 520px; }
+  .hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center; padding: 56px 0 20px; }
+  h1 { font-size: 54px; line-height: 1.05; letter-spacing: -1.8px; font-weight: 780; }
+  .lead { font-size: 19px; color: var(--ink2); margin-top: 22px; max-width: 480px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 24px; }
+  .facts span { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--ink2); }
+  .facts i { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); display: inline-block; }
 
-  /* Ürün görseli + nabız halkası */
-  .product-vis { position: relative; display: flex; justify-content: center; }
-  .pulse-ring {
-    position: absolute; top: 50%; left: 50%; width: 90px; height: 70px;
+  .product-panel {
+    background: var(--teal-soft); border-radius: 28px; padding: 34px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .product-panel .pulse-ring {
+    position: absolute; top: 50%; left: 50%; width: 140px; height: 140px;
     border: 2px solid var(--teal); border-radius: 50%;
     transform: translate(-50%, -50%); opacity: 0;
-    animation: pulse 2.4s ease-out infinite;
+    animation: pulse 2.8s ease-out infinite;
   }
-  .pulse-ring.delay { animation-delay: 1.2s; }
+  .product-panel .pulse-ring.delay { animation-delay: 1.4s; }
   @keyframes pulse {
-    0%   { transform: translate(-50%, -50%) scale(0.55); opacity: 0.55; }
-    100% { transform: translate(-50%, -50%) scale(1.9); opacity: 0; }
+    0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0.4; }
+    100% { transform: translate(-50%, -50%) scale(2.6); opacity: 0; }
   }
-  /* ECG çizgisi */
-  .ecg { margin-top: 18px; width: 100%; height: 44px; }
+  .product-panel img { width: 100%; max-width: 380px; position: relative; z-index: 1; }
+
+  /* ---------- ECG şeridi ---------- */
+  .ecg { width: 100%; height: 52px; margin: 34px 0 8px; }
   .ecg path {
     fill: none; stroke: var(--teal); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 420; stroke-dashoffset: 420;
-    animation: draw 3.2s linear infinite;
+    stroke-dasharray: 700; stroke-dashoffset: 700;
+    animation: draw 3.6s linear infinite;
   }
   @keyframes draw {
-    0%   { stroke-dashoffset: 420; }
-    70%  { stroke-dashoffset: 0; }
-    100% { stroke-dashoffset: -420; }
+    0%   { stroke-dashoffset: 700; }
+    72%  { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -700; }
   }
 
   /* ---------- Signup ---------- */
-  .signup { background: var(--card); border-radius: 16px; padding: 24px; margin-top: 22px; }
-  .signup h2 { font-size: 18px; font-weight: 700; }
-  .signup .sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
-  .field { display: flex; gap: 8px; margin-top: 16px; }
+  .signup { background: var(--card); border-radius: 20px; padding: 28px; margin-top: 30px; }
+  .signup h2 { font-size: 21px; font-weight: 750; letter-spacing: -0.3px; }
+  .signup .sub { font-size: 14.5px; color: var(--ink2); margin-top: 6px; }
+  .field { display: flex; gap: 10px; margin-top: 18px; }
   .field input[type="email"] {
-    flex: 1; padding: 14px 15px; border: 1px solid var(--line); border-radius: 11px;
-    font-size: 15px; background: #fafbfc; color: var(--text); min-width: 0;
+    flex: 1; padding: 15px 17px; border: 1px solid var(--line); border-radius: 12px;
+    font-size: 15.5px; background: #fafbfb; color: var(--ink); min-width: 0;
   }
   .field input[type="email"]:focus { outline: 2px solid var(--teal); border-color: transparent; }
   .field button {
-    padding: 14px 22px; border: none; border-radius: 11px; background: var(--teal); color: #fff;
-    font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    padding: 15px 26px; border: none; border-radius: 12px; background: var(--teal); color: #fff;
+    font-size: 15.5px; font-weight: 700; cursor: pointer; white-space: nowrap;
   }
   .field button:active { background: var(--teal-dark); }
-  .field button:disabled { background: var(--text3); }
-  .consent { display: flex; gap: 9px; margin-top: 13px; align-items: flex-start; }
+  .field button:disabled { background: var(--ink3); }
+  .consent { display: flex; gap: 9px; margin-top: 14px; align-items: flex-start; }
   .consent input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--teal); }
-  .consent label { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .consent label { font-size: 12px; color: var(--ink2); line-height: 1.5; }
   .consent a { color: var(--teal); }
-  .counter { font-size: 13px; color: var(--text2); margin-top: 14px; }
-  .counter b { color: var(--text); font-variant-numeric: tabular-nums; }
-  .bar { height: 6px; background: var(--teal-soft); border-radius: 3px; margin-top: 8px; overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--teal); border-radius: 3px; width: 0; transition: width 0.8s ease; }
-  .form-msg { margin-top: 12px; font-size: 14px; font-weight: 600; display: none; }
+  .counter { font-size: 13px; color: var(--ink2); margin-top: 16px; }
+  .counter b { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .bar { height: 6px; background: var(--teal-soft); border-radius: 3px; margin-top: 9px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--teal); border-radius: 3px; width: 0; transition: width 0.9s ease; }
+  .form-msg { margin-top: 13px; font-size: 14px; font-weight: 600; display: none; }
   .form-msg.ok { color: var(--teal); display: block; }
   .form-msg.err { color: var(--red); display: block; }
 
   /* ---------- Bölümler ---------- */
-  section { padding: 44px 0 8px; }
-  h2.sec { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text3); font-weight: 700; }
-  .sec-lead { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; margin-top: 8px; line-height: 1.28; }
+  section { padding: 84px 0 0; }
+  h2.sec { font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px; color: var(--ink3); font-weight: 700; }
+  .sec-lead { font-size: 34px; font-weight: 750; letter-spacing: -1px; margin-top: 12px; line-height: 1.2; max-width: 640px; }
 
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 22px; }
-  .step { background: var(--card); border-radius: 14px; padding: 20px; }
+  /* Nasıl çalışır — editoryal, çizgili */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 38px; }
+  .step { border-top: 2px solid var(--ink); padding-top: 18px; }
   .step .num { font-size: 13px; font-weight: 700; color: var(--teal); font-variant-numeric: tabular-nums; }
-  .step .t { font-size: 16px; font-weight: 700; margin-top: 6px; }
-  .step .d { font-size: 14px; color: var(--text2); margin-top: 5px; }
+  .step .t { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; margin-top: 10px; }
+  .step .d { font-size: 14.5px; color: var(--ink2); margin-top: 8px; }
 
-  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 22px; }
-  .feat { background: var(--card); border-radius: 14px; padding: 20px; display: flex; gap: 14px; }
+  /* Koyu bant */
+  .band {
+    background: var(--teal-deep); color: #fff; border-radius: 24px;
+    margin: 84px 0 0; padding: 56px 48px;
+  }
+  .band h2 { font-size: 32px; font-weight: 750; letter-spacing: -0.8px; line-height: 1.22; max-width: 620px; }
+  .band p { font-size: 16px; color: #c3d5d2; margin-top: 16px; max-width: 560px; }
+  .band .pts { display: flex; gap: 34px; margin-top: 30px; flex-wrap: wrap; }
+  .band .pts div { font-size: 14px; font-weight: 650; color: #fff; }
+  .band .pts small { display: block; font-size: 12.5px; color: #9dbab6; font-weight: 500; margin-top: 3px; }
+
+  /* Özellikler */
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 38px; }
+  .feat { background: var(--card); border-radius: 16px; padding: 22px; display: flex; gap: 15px; }
   .feat .ic {
-    width: 40px; height: 40px; border-radius: 10px; background: var(--teal-soft); color: var(--teal);
+    width: 42px; height: 42px; border-radius: 11px; background: var(--teal-soft); color: var(--teal);
     display: flex; align-items: center; justify-content: center; flex: none;
   }
-  .feat .t { font-size: 15px; font-weight: 700; }
-  .feat .d { font-size: 13.5px; color: var(--text2); margin-top: 3px; }
+  .feat .t { font-size: 15.5px; font-weight: 700; }
+  .feat .d { font-size: 13.5px; color: var(--ink2); margin-top: 4px; }
 
-  .who { background: var(--card); border-radius: 14px; padding: 24px; margin-top: 22px; }
-  .who ul { margin: 14px 0 0 18px; }
-  .who li { font-size: 15px; color: var(--text2); margin-top: 8px; }
+  /* Kimler için */
+  .who { background: var(--card); border-radius: 20px; padding: 32px; margin-top: 38px; }
+  .who ul { margin: 16px 0 0 20px; }
+  .who li { font-size: 15.5px; color: var(--ink2); margin-top: 9px; }
 
-  /* ---------- FAQ ---------- */
-  details { background: var(--card); border-radius: 12px; padding: 17px 19px; margin-top: 10px; }
-  summary { cursor: pointer; font-size: 15px; font-weight: 700; list-style: none; }
+  /* Ürün detay */
+  .product-detail { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 40px; align-items: center; margin-top: 38px; }
+  .product-detail .vis { background: var(--teal-soft); border-radius: 20px; padding: 26px; display: flex; justify-content: center; }
+  .product-detail .vis img { width: 100%; max-width: 320px; }
+  .spec-row { display: flex; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-row .k { color: var(--ink2); }
+  .spec-row .v { font-weight: 700; }
+
+  /* FAQ */
+  details { background: var(--card); border-radius: 13px; padding: 19px 21px; margin-top: 11px; }
+  summary { cursor: pointer; font-size: 15.5px; font-weight: 700; list-style: none; }
   summary::-webkit-details-marker { display: none; }
-  details p { font-size: 14px; color: var(--text2); margin-top: 10px; }
+  details p { font-size: 14px; color: var(--ink2); margin-top: 11px; }
 
-  footer { padding: 48px 0 50px; color: var(--text3); font-size: 12.5px; }
-  footer .logo { font-size: 16px; color: var(--text); margin-bottom: 10px; }
-  footer a { color: var(--text2); }
+  /* Footer */
+  footer { margin-top: 90px; padding: 40px 0 56px; border-top: 1px solid var(--line); color: var(--ink3); font-size: 12.5px; }
+  footer .logo { font-size: 17px; color: var(--ink); margin-bottom: 10px; }
+  footer a { color: var(--ink2); }
 
-  @media (max-width: 760px) {
-    h1 { font-size: 31px; letter-spacing: -0.6px; }
-    .hero { grid-template-columns: 1fr; padding: 26px 0 16px; gap: 26px; }
-    .product-vis { order: -1; }
+  @media (max-width: 820px) {
+    h1 { font-size: 38px; letter-spacing: -1.2px; }
+    .hero { grid-template-columns: 1fr; padding: 30px 0 10px; gap: 32px; }
+    .product-panel { order: -1; padding: 24px; }
     .field { flex-direction: column; }
-    .steps { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; gap: 22px; }
     .features { grid-template-columns: 1fr; }
-    .sec-lead { font-size: 22px; }
+    .band { padding: 38px 26px; margin-top: 64px; }
+    .band h2 { font-size: 25px; }
+    .sec-lead { font-size: 26px; }
+    .product-detail { grid-template-columns: 1fr; }
+    section { padding: 64px 0 0; }
   }
 </style>
 </head>
@@ -152,7 +189,7 @@
 
   <header>
     <div class="logo">
-      <svg width="30" height="20" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
+      <svg width="32" height="21" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
         <path d="M30 20 C 30 7, 8 7, 8 20 C 8 33, 30 33, 30 20 C 30 7, 52 7, 52 20 C 52 33, 30 33, 30 20 Z"/>
       </svg>
       circle8
@@ -164,52 +201,52 @@
     <div>
       <h1>You can't always<br>be there.<br>circle8 can.</h1>
       <p class="lead">
-        circle8 is a screen-free safety wristband for aging parents. It detects falls,
+        A screen-free safety wristband for aging parents. It detects falls,
         measures heart rate, and knows their location. Alerts come straight to your phone.
       </p>
-
-      <div class="signup" id="signup">
-        <h2>First 2,000 signups get an exclusive launch discount</h2>
-        <div class="sub">Just leave your email. Your discount code arrives at launch.</div>
-
-        <form id="waitlistForm" novalidate>
-          <div class="field">
-            <input type="email" id="email" placeholder="Your email" required autocomplete="email">
-            <button type="submit" id="submitBtn">Join the list</button>
-          </div>
-          <div class="consent">
-            <input type="checkbox" id="consent" required>
-            <label for="consent">
-              I agree to the <a href="#privacy">Privacy Notice</a> and to receive
-              launch updates and my discount code by email.
-            </label>
-          </div>
-          <input type="text" name="website" id="website" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
-          <div class="form-msg" id="formMsg"></div>
-        </form>
-
-        <div class="counter"><b id="joinCount">0</b> people joined · <b>2,000</b> spots</div>
-        <div class="bar"><i id="joinBar"></i></div>
-        <div class="sub" style="margin-top:10px">No spam. One launch email and your code. Unsubscribe anytime.</div>
+      <div class="facts">
+        <span><i></i>Screen-free</span>
+        <span><i></i>Cellular built in</span>
+        <span><i></i>Fall detection</span>
       </div>
     </div>
 
-    <div class="product-vis">
+    <div class="product-panel">
       <div class="pulse-ring"></div>
       <div class="pulse-ring delay"></div>
-      <svg width="240" height="260" viewBox="0 0 150 165" fill="none">
-        <path d="M25 22 C 25 8, 125 8, 125 22 L 125 38 C 125 30, 25 30, 25 38 Z" fill="#c8d0d3"/>
-        <path d="M25 108 C 25 122, 125 122, 125 108 L 125 92 C 125 100, 25 100, 25 92 Z" fill="#c8d0d3"/>
-        <rect x="38" y="32" width="74" height="66" rx="18" fill="#1c6f66"/>
-        <rect x="46" y="40" width="58" height="50" rx="13" fill="#14544d"/>
-        <ellipse cx="75" cy="65" rx="13" ry="10" fill="#3f9089"/>
-        <circle cx="75" cy="65" r="4.5" fill="#eaf3f1"/>
-      </svg>
+      <img src="product.png" alt="circle8 safety wristband">
     </div>
   </div>
 
-  <svg class="ecg" viewBox="0 0 600 44" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0 22 H90 l10 -14 l10 28 l10 -22 l8 8 H300 l10 -14 l10 28 l10 -22 l8 8 H600"/>
+  <div class="wrap" style="padding:0">
+    <div class="signup" id="signup">
+      <h2>First 2,000 signups get an exclusive launch discount</h2>
+      <div class="sub">Just leave your email. Your discount code arrives at launch.</div>
+
+      <form id="waitlistForm" novalidate>
+        <div class="field">
+          <input type="email" id="email" placeholder="Your email" required autocomplete="email">
+          <button type="submit" id="submitBtn">Join the list</button>
+        </div>
+        <div class="consent">
+          <input type="checkbox" id="consent" required>
+          <label for="consent">
+            I agree to the <a href="#privacy">Privacy Notice</a> and to receive
+            launch updates and my discount code by email.
+          </label>
+        </div>
+        <input type="text" name="website" id="website" style="position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+        <div class="form-msg" id="formMsg"></div>
+      </form>
+
+      <div class="counter" id="counterLine"><b id="joinCount">0</b> people joined · <b>2,000</b> spots</div>
+      <div class="bar"><i id="joinBar"></i></div>
+      <div class="sub" style="margin-top:12px">No spam. One launch email and your code. Unsubscribe anytime.</div>
+    </div>
+  </div>
+
+  <svg class="ecg" viewBox="0 0 1000 52" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 26 H150 l12 -18 l12 36 l12 -28 l10 10 H500 l12 -18 l12 36 l12 -28 l10 10 H1000"/>
   </svg>
 
   <section>
@@ -219,12 +256,12 @@
       <div class="step">
         <div class="num">01</div>
         <div class="t">They just wear it</div>
-        <div class="d">No buttons, no menus, no settings. The battery lasts for days.</div>
+        <div class="d">No buttons, no menus, no settings. The battery lasts for days, and the app tells you when it's time to charge.</div>
       </div>
       <div class="step">
         <div class="num">02</div>
         <div class="t">It watches for the moments that matter</div>
-        <div class="d">A fall or an emergency button press triggers an alert to the family instantly.</div>
+        <div class="d">A fall or an emergency button press triggers an alert to the family instantly, day or night.</div>
       </div>
       <div class="step">
         <div class="num">03</div>
@@ -234,32 +271,46 @@
     </div>
   </section>
 
+  <div class="band">
+    <h2>When every minute counts, the first alert should reach you.</h2>
+    <p>
+      Most falls at home go unwitnessed. circle8 measures the impact and the
+      stillness that follows it, and sends an alert before worry turns into hours
+      of silence.
+    </p>
+    <div class="pts">
+      <div>Detection in seconds<small>Impact and motion analysis on the device</small></div>
+      <div>Alert to the family<small>Push notification with location</small></div>
+      <div>One tap to call<small>Emergency services from the alert screen</small></div>
+    </div>
+  </div>
+
   <section>
     <h2 class="sec">Features</h2>
     <div class="sec-lead">Built for aging parents who don't want another gadget.</div>
     <div class="features">
       <div class="feat">
-        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4"/><path d="M12 17v.2"/></svg></div>
+        <div class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3.5 22 20H2z"/><path d="M12 10v4"/><path d="M12 17v.2"/></svg></div>
         <div><div class="t">Fall detection</div><div class="d">The accelerometer detects falls and notifies you right away.</div></div>
       </div>
       <div class="feat">
-        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 5.1a5 5 0 0 0-7.1 0L12 6.4l-1.3-1.3a5 5 0 1 0-7.1 7.1L12 20.6l8.4-8.4a5 5 0 0 0 0-7.1z"/></svg></div>
+        <div class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.4 5.1a5 5 0 0 0-7.1 0L12 6.4l-1.3-1.3a5 5 0 1 0-7.1 7.1L12 20.6l8.4-8.4a5 5 0 0 0 0-7.1z"/></svg></div>
         <div><div class="t">Heart rate monitoring</div><div class="d">Optical sensor measurements throughout the day.</div></div>
       </div>
       <div class="feat">
-        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+        <div class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
         <div><div class="t">Location (GNSS)</div><div class="d">You always know where they are. No phone needed on their side.</div></div>
       </div>
       <div class="feat">
-        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5.5 5.5 0 0 1 7 0"/><path d="M12 19.5v.2"/><path d="M2 9a15 15 0 0 1 20 0"/></svg></div>
+        <div class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5.5 5.5 0 0 1 7 0"/><path d="M12 19.5v.2"/><path d="M2 9a15 15 0 0 1 20 0"/></svg></div>
         <div><div class="t">Cellular built in (LTE-M)</div><div class="d">No Wi-Fi, no phone plan. The band has its own connection.</div></div>
       </div>
       <div class="feat">
-        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="16" height="9" rx="2"/><path d="M21 11.5v2"/><rect x="5" y="10.5" width="8" height="4" rx="0.8" fill="currentColor" stroke="none"/></svg></div>
-        <div><div class="t">Days of battery</div><div class="d">No daily charging. The app tells you when it's time.</div></div>
+        <div class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="16" height="9" rx="2"/><path d="M21 11.5v2"/><rect x="5" y="10.5" width="8" height="4" rx="0.8" fill="currentColor" stroke="none"/></svg></div>
+        <div><div class="t">Days of battery</div><div class="d">No daily charging routine to remember.</div></div>
       </div>
       <div class="feat">
-        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="3"/><path d="M10 6h4"/><path d="M12 18v.2"/></svg></div>
+        <div class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2.5" width="10" height="19" rx="3"/><path d="M10 6h4"/><path d="M12 18v.2"/></svg></div>
         <div><div class="t">Emergency button</div><div class="d">One press reaches the family. From there, one tap to call emergency services.</div></div>
       </div>
     </div>
@@ -280,13 +331,24 @@
 
   <section>
     <h2 class="sec">The product</h2>
-    <div class="who">
-      <div class="sec-lead" style="margin-top:0">No screen, because there's nothing to see.</div>
-      <p style="font-size:15px;color:var(--text2);margin-top:10px">
-        circle8 is a light, curved band that sits on the wrist. It has no display,
-        because the person wearing it is never asked to do anything. All the
-        intelligence lives in the app and in the cloud.
-      </p>
+    <div class="product-detail">
+      <div class="vis">
+        <img src="product.png" alt="circle8 wristband design">
+      </div>
+      <div>
+        <div class="sec-lead" style="margin-top:0">No screen, because there's nothing to see.</div>
+        <p style="font-size:15px;color:var(--ink2);margin-top:12px">
+          circle8 is a light, curved band that sits on the wrist. It has no display,
+          because the person wearing it is never asked to do anything. All the
+          intelligence lives in the app and in the cloud.
+        </p>
+        <div style="margin-top:20px">
+          <div class="spec-row"><span class="k">Design</span><span class="v">Curved band, screen-free</span></div>
+          <div class="spec-row"><span class="k">Sensors</span><span class="v">Accelerometer, optical heart rate</span></div>
+          <div class="spec-row"><span class="k">Connectivity</span><span class="v">LTE-M + GNSS + Bluetooth</span></div>
+          <div class="spec-row"><span class="k">For</span><span class="v">Everyday wear, days of battery</span></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -317,7 +379,7 @@
   <section id="privacy">
     <h2 class="sec">Privacy Notice</h2>
     <div class="who">
-      <p style="font-size:13.5px;color:var(--text2)">
+      <p style="font-size:13.5px;color:var(--ink2)">
         The email address you provide is used only for launch updates and delivering your
         discount code. It is never shared with third parties and never used for advertising.
         You can request deletion at any time by contacting us. Health data collected by the
@@ -328,7 +390,7 @@
 
   <footer>
     <div class="logo">
-      <svg width="24" height="16" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
+      <svg width="26" height="17" viewBox="0 0 60 40" fill="none" stroke="#1c6f66" stroke-width="6" stroke-linecap="round">
         <path d="M30 20 C 30 7, 8 7, 8 20 C 8 33, 30 33, 30 20 C 30 7, 52 7, 52 20 C 52 33, 30 33, 30 20 Z"/>
       </svg>
       circle8
@@ -341,8 +403,15 @@
 
 <script>
 // ================= CONFIG =================
-// Paste your Google Apps Script Web App URL here (see README.md)
+// Option A (recommended): paste your Google Apps Script Web App URL (see README.md)
 const FORM_ENDPOINT = "PASTE_APPS_SCRIPT_URL_HERE";
+// Option B (zero setup): FormSubmit.co delivers signups to this inbox (one-time activation)
+const RECIPIENT_EMAIL = "hello@circle8.com";
+
+const USING_FORMSUBMIT = FORM_ENDPOINT.startsWith("PASTE");
+const SUBMIT_URL = USING_FORMSUBMIT
+  ? "https://formsubmit.co/ajax/" + RECIPIENT_EMAIL
+  : FORM_ENDPOINT;
 
 const form = document.getElementById("waitlistForm");
 const msg = document.getElementById("formMsg");
@@ -367,16 +436,28 @@ form.addEventListener("submit", async (e) => {
   btn.textContent = "Joining…";
 
   try {
-    const res = await fetch(FORM_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ email, consent: true, website: honeypot, source: "twitter" })
-    });
-    const data = await res.json();
+    let res, data;
+    if (USING_FORMSUBMIT) {
+      res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify({ email, consent: "yes", website: honeypot, source: "twitter" })
+      });
+      data = await res.json();
+      if (data.success === "true" || data.success === true) data = { ok: true };
+    } else {
+      res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ email, consent: true, website: honeypot, source: "twitter" })
+      });
+      data = await res.json();
+    }
+
     if (data.ok) {
       form.style.display = "none";
       showMsg("You're on the list. Your discount code arrives at launch.", "ok");
-      if (data.count != null) updateCount(data.count, true);
+      if (data.count != null) updateCount(data.count);
     } else {
       showMsg("Something went wrong. Please try again.", "err");
     }
@@ -392,7 +473,6 @@ function showMsg(text, kind) {
   msg.className = "form-msg " + kind;
 }
 
-// Sayaç animasyonu
 function animateCount(target) {
   const el = document.getElementById("joinCount");
   const start = parseInt(el.textContent.replace(/\D/g, "")) || 0;
@@ -411,8 +491,13 @@ function updateCount(n) {
   document.getElementById("joinBar").style.width = Math.min(100, (n / 2000) * 100) + "%";
 }
 
-// Sayaç yükleme
+// Sayaç: canlı kaynak varsa göster, yoksa sadece kontenjan satırını bırak (sahte sayı yok)
 (async () => {
+  if (USING_FORMSUBMIT) {
+    document.getElementById("counterLine").innerHTML =
+      "Limited to <b>2,000</b> signups · first come, first served";
+    return;
+  }
   try {
     const res = await fetch(FORM_ENDPOINT + "?count=1");
     const data = await res.json();
