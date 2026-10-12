@@ -1057,6 +1057,18 @@ if (savedName) {
 
 /* ---------------- PWA ---------------- */
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+/* ---------------- Derin bağlantı (ekran görüntüsü/demo) ----------------
+   #rapor, #cihaz → sekme açar; #alarm → alarm ekranını gösterir */
+(function () {
+  const h = location.hash.replace("#", "");
+  if (!h) return;
+  if (h === "alarm") {
+    triggerAlarm("Düşme algılandı", "bileklik olayı");
+  } else if (["durum", "rapor", "cihaz"].includes(h)) {
+    document.querySelector('[data-tab="' + h + '"]').click();
+  }
+})();
 </script>
 </body>
 </html>
